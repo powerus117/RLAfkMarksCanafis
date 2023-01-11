@@ -6,3 +6,5 @@ This is how you can use it:
 3. AFK until the timer runs out and you get a notify
 4. Run the course (the overlay will say run) 
 5. Repeat
+
+Note, this uses the local pc's time, if your time is incorrect for some reason on a seconds level, this could make the plugin less reliable.
