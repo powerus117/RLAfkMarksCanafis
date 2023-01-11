@@ -22,7 +22,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.afkmarks;
+package com.afkmarkscanafis;
 
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -35,14 +35,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 
-class AfkMarksOverlay extends OverlayPanel
+class AfkMarksCanafisOverlay extends OverlayPanel
 {
 	private static final int TIMEOUT = 10;
 
-	private final AfkMarksPlugin plugin;
+	private final AfkMarksCanafisPlugin plugin;
 
 	@Inject
-	public AfkMarksOverlay(AfkMarksPlugin plugin) {
+	public AfkMarksCanafisOverlay(AfkMarksCanafisPlugin plugin) {
 		super(plugin);
 		setPosition(OverlayPosition.TOP_LEFT);
 		this.plugin = plugin;

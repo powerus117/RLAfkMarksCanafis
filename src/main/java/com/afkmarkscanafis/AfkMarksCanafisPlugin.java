@@ -1,4 +1,4 @@
-package com.afkmarks;
+package com.afkmarkscanafis;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;
@@ -25,18 +25,20 @@ import static net.runelite.api.Skill.AGILITY;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Afk Marks"
+	name = "Afk Marks Canafis"
 )
-public class AfkMarksPlugin extends Plugin
+public class AfkMarksCanafisPlugin extends Plugin
 {
-	private final int canafisLastObstacleXp = 175;
-	private final int canafisRegionId = 13878;
+	private static final int CANAFIS_LAST_OBSTACLE_XP = 175;
+	private static final int CANAFIS_REGION_ID = 13878;
+	private static final int SECONDS_LEEWAY = 2;
+	private static final int MARK_COOLDOWN_MINUTES = 3;
 
 	@Inject
 	private Client client;
 
 	@Inject
-	private AfkMarksConfig config;
+	private AfkMarksCanafisConfig config;
 
 	@Inject
 	private Notifier notifier;
@@ -45,7 +47,7 @@ public class AfkMarksPlugin extends Plugin
 	private OverlayManager overlayManager;
 
 	@Inject
-	private AfkMarksOverlay agilityOverlay;
+	private AfkMarksCanafisOverlay agilityOverlay;
 
 	public ZonedDateTime markCooldownCompleteTime;
 	public ZonedDateTime lastCompleteTime;
@@ -54,9 +56,9 @@ public class AfkMarksPlugin extends Plugin
 	private int lastAgilityXp;
 
 	@Provides
-	AfkMarksConfig provideConfig(ConfigManager configManager)
+	AfkMarksCanafisConfig provideConfig(ConfigManager configManager)
 	{
-		return configManager.getConfig(AfkMarksConfig.class);
+		return configManager.getConfig(AfkMarksCanafisConfig.class);
 	}
 
 	@Override
@@ -95,8 +97,8 @@ public class AfkMarksPlugin extends Plugin
 		lastAgilityXp = agilityXp;
 
 		// Get course
-		if (client.getLocalPlayer().getWorldLocation().getRegionID() != canafisRegionId ||
-				Math.abs(canafisLastObstacleXp - skillGained) > 1)
+		if (client.getLocalPlayer().getWorldLocation().getRegionID() != CANAFIS_REGION_ID ||
+				Math.abs(CANAFIS_LAST_OBSTACLE_XP - skillGained) > 1)
 		{
 			return;
 		}
@@ -104,7 +106,7 @@ public class AfkMarksPlugin extends Plugin
 		Instant now = Instant.now();
 		ZonedDateTime zonedNow = now.atZone(ZoneOffset.UTC);
 		lastCompleteTime = zonedNow.truncatedTo(ChronoUnit.MINUTES);
-		if (zonedNow.getSecond() >= 58)
+		if (zonedNow.getSecond() >= 60 - SECONDS_LEEWAY)
 		{
 			lastCompleteTime = lastCompleteTime.plusMinutes(1);
 		}
@@ -145,7 +147,7 @@ public class AfkMarksPlugin extends Plugin
 
 		if (item.getId() == ItemID.MARK_OF_GRACE)
 		{
-			markCooldownCompleteTime = lastCompleteTime.plusMinutes(3).plusSeconds(2);
+			markCooldownCompleteTime = lastCompleteTime.plusMinutes(MARK_COOLDOWN_MINUTES).plusSeconds(SECONDS_LEEWAY);
 			shouldRun = false;
 		}
 	}
@@ -159,6 +161,6 @@ public class AfkMarksPlugin extends Plugin
 		}
 
 		WorldPoint location = local.getWorldLocation();
-		return location.getRegionID() == canafisRegionId;
+		return location.getRegionID() == CANAFIS_REGION_ID;
 	}
 }
