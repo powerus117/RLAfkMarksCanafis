@@ -51,7 +51,8 @@ class AfkMarksCanafisOverlay extends OverlayPanel
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (plugin.markCooldownCompleteTime == null)
+		if (plugin.markCooldownCompleteTime == null ||
+			!plugin.isInCanafisArea())
 		{
 			return null;
 		}

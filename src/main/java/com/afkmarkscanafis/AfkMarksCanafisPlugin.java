@@ -74,16 +74,6 @@ public class AfkMarksCanafisPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onGameStateChanged(GameStateChanged gameStateChanged)
-	{
-		if (gameStateChanged.getGameState() == GameState.LOGGED_IN)
-		{
-			markCooldownCompleteTime = null;
-			lastCompleteTime = null;
-		}
-	}
-
-	@Subscribe
 	public void onStatChanged(StatChanged statChanged)
 	{
 		if (statChanged.getSkill() != AGILITY)
@@ -152,7 +142,7 @@ public class AfkMarksCanafisPlugin extends Plugin
 		}
 	}
 
-	private boolean isInCanafisArea()
+	public boolean isInCanafisArea()
 	{
 		Player local = client.getLocalPlayer();
 		if (local == null)
