@@ -23,7 +23,9 @@ import static net.runelite.api.Skill.AGILITY;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Afk Marks Canafis"
+	name = "AFK Marks Canifis",
+	description = "Allows you to AFK on the last roof of the Canifis Rooftop Agility Course for marks of grace.",
+	tags = {"afk", "mark", "grace", "canifis"}
 )
 public class AfkMarksCanafisPlugin extends Plugin
 {
@@ -130,8 +132,8 @@ public class AfkMarksCanafisPlugin extends Plugin
 			if (zonedNow.isAfter(markCooldownCompleteTime))
 			{
 				shouldRun = true;
-				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Mark cooldown finished, run", null);
-				notifier.notify("Mark of grace cooldown finished");
+				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Marks of grace cooldown has finished, run until you find your next mark.", null);
+				notifier.notify("Marks of grace cooldown has finished.");
 			}
 		}
 	}
