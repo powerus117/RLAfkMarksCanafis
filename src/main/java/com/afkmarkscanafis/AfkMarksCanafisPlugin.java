@@ -5,12 +5,10 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.GameTick;
-import net.runelite.api.events.ItemSpawned;
-import net.runelite.api.events.StatChanged;
+import net.runelite.api.events.*;
 import net.runelite.client.Notifier;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -31,8 +29,8 @@ public class AfkMarksCanafisPlugin extends Plugin
 {
 	private static final int CANAFIS_LAST_OBSTACLE_XP = 175;
 	private static final int CANAFIS_REGION_ID = 13878;
-	private static final int SECONDS_LEEWAY = 2;
 	private static final int MARK_COOLDOWN_MINUTES = 3;
+	private static final int LAST_OBSTACLE_ID = 14897;
 
 	@Inject
 	private Client client;
@@ -49,9 +47,13 @@ public class AfkMarksCanafisPlugin extends Plugin
 	@Inject
 	private AfkMarksCanafisOverlay agilityOverlay;
 
+	@Inject
+	private EventBus eventBus;
+
 	public ZonedDateTime markCooldownCompleteTime;
 	public ZonedDateTime lastCompleteTime;
 	public boolean shouldRun = true;
+	public boolean isInCanafisArea = false;
 
 	private int lastAgilityXp;
 
@@ -71,6 +73,7 @@ public class AfkMarksCanafisPlugin extends Plugin
 	protected void shutDown() throws Exception
 	{
 		overlayManager.remove(agilityOverlay);
+		eventBus.unregister(this);
 	}
 
 	@Subscribe
@@ -96,7 +99,7 @@ public class AfkMarksCanafisPlugin extends Plugin
 		Instant now = Instant.now();
 		ZonedDateTime zonedNow = now.atZone(ZoneOffset.UTC);
 		lastCompleteTime = zonedNow.truncatedTo(ChronoUnit.MINUTES);
-		if (zonedNow.getSecond() >= 60 - SECONDS_LEEWAY)
+		if (zonedNow.getSecond() >= 60 - config.leewaySeconds())
 		{
 			lastCompleteTime = lastCompleteTime.plusMinutes(1);
 		}
@@ -105,7 +108,15 @@ public class AfkMarksCanafisPlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick tick)
 	{
-		if (isInCanafisArea() && !shouldRun)
+		boolean isCurrentlyInCanafis = isInCanafisArea();
+
+		if (isInCanafisArea != isCurrentlyInCanafis)
+		{
+			onInsideCanafisAreaChanged(isCurrentlyInCanafis);
+			isInCanafisArea = isCurrentlyInCanafis;
+		}
+
+		if (isCurrentlyInCanafis && !shouldRun)
 		{
 			if (markCooldownCompleteTime == null)
 			{
@@ -137,12 +148,33 @@ public class AfkMarksCanafisPlugin extends Plugin
 
 		if (item.getId() == ItemID.MARK_OF_GRACE)
 		{
-			markCooldownCompleteTime = lastCompleteTime.plusMinutes(MARK_COOLDOWN_MINUTES).plusSeconds(SECONDS_LEEWAY);
+			markCooldownCompleteTime = lastCompleteTime.plusMinutes(MARK_COOLDOWN_MINUTES).plusSeconds(config.leewaySeconds());
 			shouldRun = false;
 		}
 	}
 
-	public boolean isInCanafisArea()
+	@Subscribe
+	public void onMenuEntryAdded(MenuEntryAdded e)
+	{
+		if (isInCanafisArea && !shouldRun && config.swapLeftClickOnWait() && e.getIdentifier() == LAST_OBSTACLE_ID)
+		{
+			e.getMenuEntry().setDeprioritized(true);
+		}
+	}
+
+	private void onInsideCanafisAreaChanged(boolean isInArea)
+	{
+		if (isInArea)
+		{
+			eventBus.register(this);
+		}
+		else
+		{
+			eventBus.unregister(this);
+		}
+	}
+
+	private boolean isInCanafisArea()
 	{
 		Player local = client.getLocalPlayer();
 		if (local == null)
