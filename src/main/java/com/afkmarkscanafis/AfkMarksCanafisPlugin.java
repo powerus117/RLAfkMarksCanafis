@@ -49,9 +49,6 @@ public class AfkMarksCanafisPlugin extends Plugin
 	@Inject
 	private AfkMarksCanafisOverlay agilityOverlay;
 
-	@Inject
-	private EventBus eventBus;
-
 	public ZonedDateTime markCooldownCompleteTime;
 	public ZonedDateTime lastCompleteTime;
 	public boolean shouldRun = true;
@@ -75,7 +72,6 @@ public class AfkMarksCanafisPlugin extends Plugin
 	protected void shutDown() throws Exception
 	{
 		overlayManager.remove(agilityOverlay);
-		eventBus.unregister(this);
 	}
 
 	@Subscribe
@@ -114,7 +110,6 @@ public class AfkMarksCanafisPlugin extends Plugin
 
 		if (isInCanafisArea != isCurrentlyInCanafis)
 		{
-			onInsideCanafisAreaChanged(isCurrentlyInCanafis);
 			isInCanafisArea = isCurrentlyInCanafis;
 		}
 
@@ -161,18 +156,6 @@ public class AfkMarksCanafisPlugin extends Plugin
 		if (isInCanafisArea && !shouldRun && config.swapLeftClickOnWait() && e.getIdentifier() == LAST_OBSTACLE_ID)
 		{
 			e.getMenuEntry().setDeprioritized(true);
-		}
-	}
-
-	private void onInsideCanafisAreaChanged(boolean isInArea)
-	{
-		if (isInArea)
-		{
-			eventBus.register(this);
-		}
-		else
-		{
-			eventBus.unregister(this);
 		}
 	}
 
