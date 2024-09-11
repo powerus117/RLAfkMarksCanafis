@@ -136,7 +136,11 @@ public class MarksOfGraceCDPlugin extends Plugin
 
 		if (config.swapLeftClickOnWait() && e.getIdentifier() == currentCourse.getLastObstacleId())
 		{
-			e.getMenuEntry().setDeprioritized(true);
+			long millisLeft = getCooldownTimestamp(true) - Instant.now().toEpochMilli();
+			if (millisLeft > 0 && millisLeft / 1000 < config.swapLeftClickTimeLeft())
+			{
+				e.getMenuEntry().setDeprioritized(true);
+			}
 		}
 	}
 
