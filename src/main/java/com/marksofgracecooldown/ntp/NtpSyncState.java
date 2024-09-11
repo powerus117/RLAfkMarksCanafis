@@ -1,4 +1,4 @@
-package com.afkmarkscanafis.ntp;
+package com.marksofgracecooldown.ntp;
 
 public enum NtpSyncState
 {
