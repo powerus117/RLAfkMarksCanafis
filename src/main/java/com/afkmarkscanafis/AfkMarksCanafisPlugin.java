@@ -1,5 +1,7 @@
 package com.afkmarkscanafis;
 
+import com.afkmarkscanafis.ntp.NtpClient;
+import com.afkmarkscanafis.ntp.NtpSyncState;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
@@ -8,16 +10,12 @@ import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
 import net.runelite.client.Notifier;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 
 import static net.runelite.api.Skill.AGILITY;
 
@@ -29,6 +27,8 @@ import static net.runelite.api.Skill.AGILITY;
 )
 public class AfkMarksCanafisPlugin extends Plugin
 {
+	public static final long MILLIS_PER_MINUTE = 60_000;
+
 	private static final int CANAFIS_LAST_OBSTACLE_XP = 175;
 	private static final int CANAFIS_REGION_ID = 13878;
 	private static final int MARK_COOLDOWN_MINUTES = 3;
@@ -49,9 +49,10 @@ public class AfkMarksCanafisPlugin extends Plugin
 	@Inject
 	private AfkMarksCanafisOverlay agilityOverlay;
 
-	public ZonedDateTime markCooldownCompleteTime;
-	public ZonedDateTime lastCompleteTime;
-	public boolean shouldRun = true;
+	public long lastCompleteMarkTimeMillis;
+	public long lastCompleteTimeMillis;
+
+	public boolean isOnCooldown = false;
 	public boolean isInCanafisArea = false;
 
 	private int lastAgilityXp;
@@ -89,18 +90,13 @@ public class AfkMarksCanafisPlugin extends Plugin
 
 		// Get course
 		if (client.getLocalPlayer().getWorldLocation().getRegionID() != CANAFIS_REGION_ID ||
-				Math.abs(CANAFIS_LAST_OBSTACLE_XP - skillGained) > 1)
+			skillGained != CANAFIS_LAST_OBSTACLE_XP)
 		{
 			return;
 		}
 
-		Instant now = Instant.now();
-		ZonedDateTime zonedNow = now.atZone(ZoneOffset.UTC);
-		lastCompleteTime = zonedNow.truncatedTo(ChronoUnit.MINUTES);
-		if (zonedNow.getSecond() >= 60 - config.leewaySeconds())
-		{
-			lastCompleteTime = lastCompleteTime.plusMinutes(1);
-		}
+		lastCompleteTimeMillis = Instant.now().toEpochMilli();
+		CheckNtpSync();
 	}
 
 	@Subscribe
@@ -113,20 +109,17 @@ public class AfkMarksCanafisPlugin extends Plugin
 			isInCanafisArea = isCurrentlyInCanafis;
 		}
 
-		if (isCurrentlyInCanafis && !shouldRun)
+		if (isCurrentlyInCanafis && isOnCooldown)
 		{
-			if (markCooldownCompleteTime == null)
+			if (lastCompleteMarkTimeMillis == 0)
 			{
-				shouldRun = true;
+				isOnCooldown = false;
 				return;
 			}
 
-			Instant now = Instant.now();
-			ZonedDateTime zonedNow = now.atZone(ZoneOffset.UTC);
-
-			if (zonedNow.isAfter(markCooldownCompleteTime))
+			if (Instant.now().toEpochMilli() >= getCooldownTimestamp())
 			{
-				shouldRun = true;
+				isOnCooldown = false;
 				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Marks of grace cooldown has finished, run until you find your next mark.", null);
 				notifier.notify("Marks of grace cooldown has finished.");
 			}
@@ -145,18 +138,32 @@ public class AfkMarksCanafisPlugin extends Plugin
 
 		if (item.getId() == ItemID.MARK_OF_GRACE)
 		{
-			markCooldownCompleteTime = lastCompleteTime.plusMinutes(MARK_COOLDOWN_MINUTES).plusSeconds(config.leewaySeconds());
-			shouldRun = false;
+			lastCompleteMarkTimeMillis = lastCompleteTimeMillis;
+			isOnCooldown = true;
 		}
 	}
 
 	@Subscribe
 	public void onMenuEntryAdded(MenuEntryAdded e)
 	{
-		if (isInCanafisArea && !shouldRun && config.swapLeftClickOnWait() && e.getIdentifier() == LAST_OBSTACLE_ID)
+		if (isInCanafisArea && isOnCooldown && config.swapLeftClickOnWait() && e.getIdentifier() == LAST_OBSTACLE_ID)
 		{
 			e.getMenuEntry().setDeprioritized(true);
 		}
+	}
+
+	public long getCooldownTimestamp()
+	{
+		if (lastCompleteMarkTimeMillis == 0)
+			return lastCompleteMarkTimeMillis;
+
+		// First convert to server timestamp to get the correct minute
+		long offsetMillis = lastCompleteMarkTimeMillis + NtpClient.SyncedOffsetMillis;
+		long minuteTruncatedMillis = offsetMillis - (offsetMillis % MILLIS_PER_MINUTE);
+		long localCooldownMillis = minuteTruncatedMillis + (MARK_COOLDOWN_MINUTES * MILLIS_PER_MINUTE);
+		long leewayAdjusted = localCooldownMillis + ((long)config.leewaySeconds() * 1000);
+		// We revert the ntp offset to get back to a local time that we locally wait for
+		return leewayAdjusted - NtpClient.SyncedOffsetMillis;
 	}
 
 	private boolean isInCanafisArea()
@@ -169,5 +176,11 @@ public class AfkMarksCanafisPlugin extends Plugin
 
 		WorldPoint location = local.getWorldLocation();
 		return location.getRegionID() == CANAFIS_REGION_ID;
+	}
+
+	private void CheckNtpSync()
+	{
+		if (NtpClient.SyncState == NtpSyncState.NOT_SYNCED)
+			NtpClient.startSync();
 	}
 }

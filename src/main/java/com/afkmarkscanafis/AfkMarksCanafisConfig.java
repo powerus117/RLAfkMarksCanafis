@@ -22,7 +22,7 @@ public interface AfkMarksCanafisConfig extends Config
     @ConfigItem(
             keyName = "leewaySeconds",
             name = "Seconds of leeway",
-            description = "Grace period for when timer is triggered, increase if timings feel off. And sync computer clock",
+            description = "Grace period for when timer is triggered, increase if timings are off.",
             position = 1
     )
     @Units(Units.SECONDS)
@@ -30,4 +30,15 @@ public interface AfkMarksCanafisConfig extends Config
     {
         return 2;
     }
+
+	@ConfigItem(
+		keyName = "showDebugValues",
+		name = "Show debug values",
+		description = "Displays plugin debug values like ntp offset and state",
+		position = 2
+	)
+	default boolean showDebugValues()
+	{
+		return false;
+	}
 }

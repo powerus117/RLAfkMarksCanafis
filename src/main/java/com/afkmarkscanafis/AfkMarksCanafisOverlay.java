@@ -24,6 +24,7 @@
  */
 package com.afkmarkscanafis;
 
+import com.afkmarkscanafis.ntp.NtpClient;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.LineComponent;
@@ -37,9 +38,13 @@ import java.time.ZoneOffset;
 
 class AfkMarksCanafisOverlay extends OverlayPanel
 {
-	private static final int TIMEOUT = 10;
+	private static final int TIMEOUT_MINUTES = 5;
+	private static final long TIMEOUT_MILLIS = TIMEOUT_MINUTES * AfkMarksCanafisPlugin.MILLIS_PER_MINUTE;
 
 	private final AfkMarksCanafisPlugin plugin;
+
+	@Inject
+	private AfkMarksCanafisConfig config;
 
 	@Inject
 	public AfkMarksCanafisOverlay(AfkMarksCanafisPlugin plugin) {
@@ -51,43 +56,80 @@ class AfkMarksCanafisOverlay extends OverlayPanel
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (plugin.markCooldownCompleteTime == null ||
+		if (plugin.lastCompleteMarkTimeMillis == 0 ||
 			!plugin.isInCanafisArea)
 		{
 			return null;
 		}
 
-		Duration markTimeout = Duration.ofMinutes(TIMEOUT);
-		Duration sinceLastComplete = Duration.between(plugin.lastCompleteTime, Instant.now().atZone(ZoneOffset.UTC));
+		long currentMillis = Instant.now().toEpochMilli();
+		long millisSinceLastComplete = currentMillis - plugin.lastCompleteTimeMillis;
 
-		if (sinceLastComplete.compareTo(markTimeout) >= 0)
+		if (millisSinceLastComplete > TIMEOUT_MILLIS)
 		{
-			plugin.markCooldownCompleteTime = null;
-			plugin.lastCompleteTime = null;
+			plugin.lastCompleteMarkTimeMillis = 0;
+			plugin.lastCompleteTimeMillis = 0;
 			return null;
 		}
 
-		if (plugin.shouldRun)
-		{
-			panelComponent.getChildren().add(TitleComponent.builder()
-				.text("Run")
-				.color(Color.GREEN)
-				.build());
-		}
-		else
+		if (plugin.isOnCooldown)
 		{
 			panelComponent.getChildren().add(TitleComponent.builder()
 				.text("Wait")
 				.color(Color.RED)
 				.build());
 		}
+		else
+		{
+			panelComponent.getChildren().add(TitleComponent.builder()
+				.text("Run")
+				.color(Color.GREEN)
+				.build());
+		}
 
-		long s = Math.max(Duration.between(Instant.now().atZone(ZoneOffset.UTC), plugin.markCooldownCompleteTime).getSeconds(), 0);
+		long millisLeft = plugin.isOnCooldown ? plugin.getCooldownTimestamp() - currentMillis : 0;
+		long secondsLeft = (long)Math.ceil((double)millisLeft / 1000);
 		panelComponent.getChildren().add(LineComponent.builder()
 				.left("Time until run:")
-				.right(String.format("%d:%02d", (s % 3600) / 60, (s % 60)))
+				.right(String.format("%d:%02d", (secondsLeft % 3600) / 60, (secondsLeft % 60)))
 				.build());
 
+		if (config.showDebugValues())
+		{
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("NTP State:")
+				.right(String.valueOf(NtpClient.SyncState))
+				.build());
+
+			panelComponent.getChildren().add(LineComponent.builder()
+				.left("Time offset:")
+				.right(getReadableOffset(NtpClient.SyncedOffsetMillis))
+				.build());
+		}
+
 		return super.render(graphics);
+	}
+
+	private String getReadableOffset(long offset)
+	{
+		if (Math.abs(offset) < 1000)
+			return offset + "ms";
+
+		offset /= 1000; // Seconds
+
+		if (Math.abs(offset) < 1000)
+			return offset + "s";
+
+		offset /= 60; // Minutes
+
+		if (Math.abs(offset) < 1000)
+			return offset + "m";
+
+		offset /= 60; // Hours
+
+		if (Math.abs(offset) < 1000)
+			return offset + "h";
+
+		return "LOTS";
 	}
 }
