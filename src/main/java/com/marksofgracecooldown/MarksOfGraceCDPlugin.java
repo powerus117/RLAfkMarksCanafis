@@ -23,7 +23,7 @@ import static net.runelite.api.Skill.AGILITY;
 @PluginDescriptor(
 	name = "Marks of Grace Cooldown",
 	description = "Tracks the cooldown for Marks of Grace on Agility Courses, allowing you to time your laps, AFK or do other activities",
-	tags = {"mark", "of", "grace", "afk", "cooldown", "tracker", "canifis"},
+	tags = {"mark", "of", "grace", "afk", "cooldown", "tracker", "canifis", "agility"},
 	configName = "AfkMarksCanafisPlugin" // Old name from when it was canifis only
 )
 public class MarksOfGraceCDPlugin extends Plugin
