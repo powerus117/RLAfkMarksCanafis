@@ -5,7 +5,7 @@ import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.Units;
 
-@ConfigGroup("MarksOfGraceCooldown")
+@ConfigGroup("AfkMarksCanafis")  // Old name from when it was canifis only
 public interface MarksOfGraceCDConfig extends Config
 {
 	@ConfigItem(
