@@ -8,11 +8,22 @@ import net.runelite.client.config.Units;
 @ConfigGroup("MarksOfGraceCooldown")
 public interface MarksOfGraceCDConfig extends Config
 {
+	@ConfigItem(
+		keyName = "sendNotification",
+		name = "Send notification",
+		description = "Should a notification be send when the cooldown has expired",
+		position = 0
+	)
+	default boolean sendNotification()
+	{
+		return true;
+	}
+
     @ConfigItem(
             keyName = "swapLeftClickOnWait",
             name = "Swap left click on wait",
             description = "Swaps left click of last obstacle while wait is on to prevent accidental lap completion",
-            position = 0
+            position = 1
     )
     default boolean swapLeftClickOnWait()
     {
@@ -23,7 +34,7 @@ public interface MarksOfGraceCDConfig extends Config
 		keyName = "swapLeftClickTimeLeft",
 		name = "Swap left click on time left",
 		description = "Only swap left click when the cooldown time remaining is below this number.",
-		position = 1
+		position = 2
 	)
 	@Units(Units.SECONDS)
 	default int swapLeftClickTimeLeft()
@@ -35,7 +46,7 @@ public interface MarksOfGraceCDConfig extends Config
             keyName = "leewaySeconds",
             name = "Seconds of leeway",
             description = "Grace period for when timer is triggered, increase if timings are off.",
-            position = 2
+            position = 3
     )
     @Units(Units.SECONDS)
     default int leewaySeconds()
@@ -47,7 +58,7 @@ public interface MarksOfGraceCDConfig extends Config
 		keyName = "useShortArdougneTimer",
 		name = "Use short Ardougne timer",
 		description = "When having the elite Ardougne diary, there is a 50% chance to reduce the Ardougne cooldown to 2 min. Would you want to be notified after the reduced time or normal time?",
-		position = 3
+		position = 4
 	)
 	default boolean useShortArdougneTimer()
 	{
@@ -58,7 +69,7 @@ public interface MarksOfGraceCDConfig extends Config
 		keyName = "showDebugValues",
 		name = "Show debug values",
 		description = "Displays plugin debug values like ntp offset and state",
-		position = 4
+		position = 5
 	)
 	default boolean showDebugValues()
 	{

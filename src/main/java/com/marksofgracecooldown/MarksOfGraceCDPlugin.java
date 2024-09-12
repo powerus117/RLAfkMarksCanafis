@@ -107,7 +107,11 @@ public class MarksOfGraceCDPlugin extends Plugin
 			{
 				isOnCooldown = false;
 				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "Marks of grace cooldown has finished, run until you find your next mark.", null);
-				notifier.notify("Marks of grace cooldown has finished.");
+
+				if (config.sendNotification())
+				{
+					notifier.notify("Marks of grace cooldown has finished.");
+				}
 			}
 		}
 	}
@@ -127,7 +131,6 @@ public class MarksOfGraceCDPlugin extends Plugin
 		}
 	}
 
-	int lastId = 0;
 	@Subscribe
 	public void onMenuEntryAdded(MenuEntryAdded e)
 	{
