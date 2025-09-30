@@ -4,19 +4,20 @@ import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.Units;
+import net.runelite.client.config.Notification;
 
 @ConfigGroup("AfkMarksCanafis")  // Old name from when it was canifis only
 public interface MarksOfGraceCDConfig extends Config
 {
 	@ConfigItem(
-		keyName = "sendNotification",
-		name = "Send notification",
-		description = "Should a notification be send when the cooldown has expired",
+		keyName = "cooldownNotifier",
+		name = "Cooldown notifier",
+		description = "Notify when the cooldown has expired.",
 		position = 0
 	)
-	default boolean sendNotification()
+	default Notification notifyMarksOfGraceCD()
 	{
-		return true;
+		return Notification.ON;
 	}
 
     @ConfigItem(
