@@ -26,9 +26,8 @@ dependencies {
     testImplementation group: 'net.runelite', name:'jshell', version: runeLiteVersion
 }
 
-group = 'com.example'
+group = 'com.marksofgracecooldown'
 version = '1.0-SNAPSHOT'
-sourceCompatibility = '1.8'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
