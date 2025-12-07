@@ -19,21 +19,49 @@ public class MarksOfGraceCDPluginTest {
         // Provide a minimal config implementation (use defaults for unused methods)
         MarksOfGraceCDConfig cfg = new MarksOfGraceCDConfig() {
             @Override
-            public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
+            public Notification notifyMarksOfGraceCD() {
+                return Notification.OFF;
+            }
+
             @Override
-            public boolean swapLeftClickOnWait() { return false; }
+            public boolean swapLeftClickOnWait() {
+                return false;
+            }
+
             @Override
-            public int swapLeftClickTimeLeft() { return 180; }
+            public int swapLeftClickTimeLeft() {
+                return 180;
+            }
+
             @Override
-            public int timerBufferSeconds() { return 0; }
+            public int timerBufferSeconds() {
+                return 0;
+            }
+
             @Override
-            public boolean useShortArdougneTimer() { return true; }
+            public boolean useShortArdougneTimer() {
+                return false;
+            }
+
             @Override
-            public boolean enableWorldPing() { return false; }
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
             @Override
-            public int pingRefreshInterval() { return 15; }
+            public boolean enableWorldPing() {
+                return false;
+            }
+
             @Override
-            public boolean showDebugValues() { return false; }
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
         };
 
         // Use reflection to set the private config field on plugin
