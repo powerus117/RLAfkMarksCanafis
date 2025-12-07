@@ -1,8 +1,8 @@
 package com.marksofgracecooldown;
 
 import com.google.inject.Provides;
-import com.marksofgracecooldown.ntp.NtpClient;
-import com.marksofgracecooldown.ntp.NtpSyncState;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -16,13 +16,21 @@ import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.Notifier;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.game.WorldService;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.worldhopper.ping.Ping;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.http.api.worlds.World;
+import net.runelite.http.api.worlds.WorldResult;
 
 import javax.inject.Inject;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static net.runelite.api.Skill.AGILITY;
 
@@ -50,7 +58,14 @@ public class MarksOfGraceCDPlugin extends Plugin {
     @Inject
     private OverlayManager overlayManager;
     @Inject
-    private MarksOfGraceCDOverlay agilityOverlay;
+    private MarksOfGraceCDOverlay marksCooldownOverlay;
+    @Inject
+    private WorldService worldService;
+    private ScheduledExecutorService pingExecutor;
+    // last measured ping to the current RS world in ms; -1 == unknown
+    @Setter
+    @Getter
+    private volatile int lastWorldPing = -1;
 
     @Provides
     MarksOfGraceCDConfig provideConfig(ConfigManager configManager) {
@@ -59,12 +74,58 @@ public class MarksOfGraceCDPlugin extends Plugin {
 
     @Override
     protected void startUp() throws Exception {
-        overlayManager.add(agilityOverlay);
+        overlayManager.add(marksCooldownOverlay);
+
+        // Start background executor to periodically refresh the ping to the current world if enabled
+        if (config.enableWorldPing()) {
+            pingExecutor = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "mogcd-world-ping"));
+            int interval = Math.max(1, config.pingRefreshInterval());
+            pingExecutor.scheduleWithFixedDelay(this::refreshWorldPing, 5, interval, TimeUnit.SECONDS);
+        } else {
+            pingExecutor = null;
+            lastWorldPing = -1;
+        }
     }
 
     @Override
     protected void shutDown() throws Exception {
-        overlayManager.remove(agilityOverlay);
+        overlayManager.remove(marksCooldownOverlay);
+        if (pingExecutor != null) {
+            pingExecutor.shutdownNow();
+            pingExecutor = null;
+        }
+        lastWorldPing = -1;
+    }
+
+    private void refreshWorldPing() {
+        try {
+            if (worldService == null || client == null) return;
+            WorldResult wr = worldService.getWorlds();
+            if (wr == null) return;
+            List<World> worlds = wr.getWorlds();
+            if (worlds == null || worlds.isEmpty()) return;
+            int currentWorldId = client.getWorld();
+            World match = null;
+            for (World w : worlds) {
+                if (w.getId() == currentWorldId) {
+                    match = w;
+                    break;
+                }
+            }
+
+            if (match != null) {
+                // Ping.ping is a blocking call; run in this background thread
+                int ping = Ping.ping(match);
+                if (ping >= 0) {
+                    lastWorldPing = ping;
+                } else {
+                    lastWorldPing = -1;
+                }
+            }
+        } catch (Throwable t) {
+            log.debug("Failed to refresh world ping: {}", t.toString());
+            lastWorldPing = -1;
+        }
     }
 
     @Subscribe
@@ -78,7 +139,6 @@ public class MarksOfGraceCDPlugin extends Plugin {
                 wp.equals(this.client.getLocalPlayer().getWorldLocation()))) {
             currentCourse = course;
             lastCompleteTimeMillis = Instant.now().toEpochMilli();
-            CheckNtpSync();
 
             hasReducedCooldown = currentCourse == Courses.ARDOUGNE &&
                     client.getVarbitValue(VarbitID.ARDOUGNE_DIARY_ELITE_COMPLETE) == 1;
@@ -134,22 +194,30 @@ public class MarksOfGraceCDPlugin extends Plugin {
         if (lastCompleteMarkTimeMillis == 0)
             return lastCompleteMarkTimeMillis;
 
-        // First convert to server timestamp to get the correct minute
-        long offsetMillis = lastCompleteMarkTimeMillis + NtpClient.SyncedOffsetMillis;
-        long minuteTruncatedMillis = offsetMillis - (offsetMillis % MILLIS_PER_MINUTE);
+        // Use local clock minute-truncation and the user-configured leewaySeconds instead of NTP
+        long minuteTruncatedMillis = lastCompleteMarkTimeMillis - (lastCompleteMarkTimeMillis % MILLIS_PER_MINUTE);
         long localCooldownMillis = minuteTruncatedMillis + (MARK_COOLDOWN_MINUTES * MILLIS_PER_MINUTE);
-        long leewayAdjusted = localCooldownMillis + ((long) config.leewaySeconds() * 1000);
-        // We revert the ntp offset to get back to a local time that we locally wait for
-        long ntpAdjusted = leewayAdjusted - NtpClient.SyncedOffsetMillis;
+        long leewayAdjusted = localCooldownMillis + ((long) config.timerBufferSeconds() * 1000);
 
         if (checkForReduced && hasReducedCooldown && config.useShortArdougneTimer())
-            ntpAdjusted -= MILLIS_PER_MINUTE;
+            leewayAdjusted -= MILLIS_PER_MINUTE;
 
-        return ntpAdjusted;
-    }
+        // If we have a recent ping to the world, approximate one-way delay and subtract it
+        try {
+            int ping = lastWorldPing;
+            if (ping > 0) {
+                long oneWay = ping / 2L;
+                leewayAdjusted -= oneWay;
+            }
+        } catch (Throwable t) {
+            // ignore and fall back to local-only timing
+        }
 
-    private void CheckNtpSync() {
-        if (NtpClient.SyncState == NtpSyncState.NOT_SYNCED)
-            NtpClient.startSync();
+        // Safety: don't return a timestamp earlier than the recorded completion time
+        if (leewayAdjusted < lastCompleteMarkTimeMillis) {
+            leewayAdjusted = lastCompleteMarkTimeMillis;
+        }
+
+        return leewayAdjusted;
     }
 }
