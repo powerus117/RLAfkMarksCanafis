@@ -36,33 +36,67 @@ public interface MarksOfGraceCDConfig extends Config {
     }
 
     @ConfigItem(
-            keyName = "leewaySeconds",
-            name = "Seconds of leeway",
-            description = "Grace period for when timer is triggered, increase if timings are off.",
-            position = 3
-    )
-    @Units(Units.SECONDS)
-    default int leewaySeconds() {
-        return 1;
-    }
-
-    @ConfigItem(
             keyName = "useShortArdougneTimer",
             name = "Use short Ardougne timer",
             description = "When having the elite Ardougne diary, there is a 50% chance to reduce the Ardougne cooldown to 2 min. Would you want to be notified after the reduced time or normal time?",
-            position = 4
+            position = 3
     )
     default boolean useShortArdougneTimer() {
         return true;
     }
 
+    @ConfigSection(
+            name = "Advanced",
+            description = "Advanced settings (opt-in). These affect network checks and are normally left at defaults.",
+            position = 4,
+            closedByDefault = true
+    )
+    String advanced = "advanced";
+
+    @ConfigItem(
+            keyName = "enableWorldPing",
+            name = "Enable world ping",
+            description = "When enabled the plugin will periodically measure latency to your current RuneScape world using RuneLite's ping implementation. Disable to avoid any additional network traffic.",
+            position = 5,
+            section = advanced
+    )
+    default boolean enableWorldPing() {
+        return true;
+    }
+
+    @ConfigItem(
+            keyName = "pingRefreshInterval",
+            name = "Ping refresh interval",
+            description = "How often (seconds) to refresh the world ping when enabled; larger values reduce network activity. Minimum 1 second.",
+            position = 6,
+            section = advanced
+    )
+    @Units(Units.SECONDS)
+    default int pingRefreshInterval() {
+        return 15;
+    }
+
+    @ConfigItem(
+            keyName = "timerBufferSeconds",
+            name = "Timer buffer (seconds)",
+            description = "Extra buffer added when calculating whether the Marks of Grace cooldown has expired. Default is 0 because world-ping is used; increase only if the overlay reports the cooldown as finished before a mark can actually spawn (try 1-3 seconds).",
+            position = 7,
+            section = advanced
+    )
+    @Units(Units.SECONDS)
+    default int timerBufferSeconds() {
+        return 0;
+    }
+
     @ConfigItem(
             keyName = "showDebugValues",
             name = "Show debug values",
-            description = "Displays plugin debug values like ntp offset and state",
-            position = 5
+            description = "Displays plugin debug values such as measured world ping and internal timings (for troubleshooting). When enabled, ping measurements will also be visible in the overlay.",
+            position = 8,
+            section = advanced
     )
     default boolean showDebugValues() {
         return false;
     }
+
 }
