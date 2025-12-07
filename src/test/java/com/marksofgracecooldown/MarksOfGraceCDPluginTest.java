@@ -23,8 +23,8 @@ public class MarksOfGraceCDPluginTest {
             }
 
             @Override
-            public boolean swapLeftClickOnWait() {
-                return false;
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.OFF;
             }
 
             @Override
@@ -135,7 +135,7 @@ public class MarksOfGraceCDPluginTest {
 
         MarksOfGraceCDConfig cfg = new MarksOfGraceCDConfig() {
             @Override public net.runelite.client.config.Notification notifyMarksOfGraceCD() { return net.runelite.client.config.Notification.OFF; }
-            @Override public boolean swapLeftClickOnWait() { return true; }
+            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP; }
             @Override public int customLapTimeSeconds() { return 180; }
             @Override public int timerBufferSeconds() { return 0; }
             @Override public boolean useShortArdougneTimer() { return true; }
@@ -165,7 +165,7 @@ public class MarksOfGraceCDPluginTest {
 
         MarksOfGraceCDConfig cfg = new MarksOfGraceCDConfig() {
             @Override public net.runelite.client.config.Notification notifyMarksOfGraceCD() { return net.runelite.client.config.Notification.OFF; }
-            @Override public boolean swapLeftClickOnWait() { return true; }
+            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP; }
             @Override public int customLapTimeSeconds() { return 180; }
             @Override public int timerBufferSeconds() { return 0; }
             @Override public boolean useShortArdougneTimer() { return true; }
