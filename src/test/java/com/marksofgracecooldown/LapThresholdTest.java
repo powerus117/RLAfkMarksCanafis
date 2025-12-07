@@ -21,7 +21,7 @@ public class LapThresholdTest {
             @Override public boolean useSeersTeleport() { return false; }
             @Override public boolean assumeHardKandarinDiary() { return false; }
             // Unused defaults
-            @Override public boolean swapLeftClickOnWait() { return false; }
+            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.OFF; }
             @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
             @Override public boolean useShortArdougneTimer() { return false; }
             @Override public boolean enableWorldPing() { return false; }
@@ -54,7 +54,7 @@ public class LapThresholdTest {
             @Override public int lapTimeBuffer() { return 0; }
             @Override public boolean useSeersTeleport() { return false; }
             @Override public boolean assumeHardKandarinDiary() { return false; }
-            @Override public boolean swapLeftClickOnWait() { return false; }
+            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.OFF; }
             @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
             @Override public boolean useShortArdougneTimer() { return false; }
             @Override public boolean enableWorldPing() { return false; }
