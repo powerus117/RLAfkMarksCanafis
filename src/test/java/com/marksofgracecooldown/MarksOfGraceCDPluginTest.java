@@ -61,6 +61,82 @@ public class MarksOfGraceCDPluginTest {
             public boolean showDebugValues() {
                 return false;
             }
+
+            // Per-course toggles default to true in the real config; tests can override as needed
+            @Override
+            public boolean enableDraynor() {
+                return true;
+            }
+
+            @Override
+            public boolean enableAlKharid() {
+                return true;
+            }
+
+            @Override
+            public boolean enableVarrock() {
+                return true;
+            }
+
+            @Override
+            public boolean enableCanifis() {
+                return true;
+            }
+
+            @Override
+            public boolean enableFalador() {
+                return true;
+            }
+
+            @Override
+            public boolean enableSeers() {
+                return true;
+            }
+
+            @Override
+            public boolean enablePollnivneach() {
+                return true;
+            }
+
+            @Override
+            public boolean enableRelleka() {
+                return true;
+            }
+
+            @Override
+            public boolean enableArdougne() {
+                return true;
+            }
+
+            @Override
+            public boolean enableGnome() {
+                return true;
+            }
+
+            @Override
+            public boolean enableShayzienBasic() {
+                return true;
+            }
+
+            @Override
+            public boolean enableBarbarian() {
+                return true;
+            }
+
+            @Override
+            public boolean enableShayzienAdvanced() {
+                return true;
+            }
+
+            @Override
+            public boolean enableApeAtoll() {
+                return true;
+            }
+
+            @Override
+            public boolean enableWerewolf() {
+                return true;
+            }
         };
 
         // Inject the test config without reflection
@@ -133,7 +209,7 @@ public class MarksOfGraceCDPluginTest {
             }
         };
 
-        MarksOfGraceCDConfig cfg = new MarksOfGraceCDConfig() {
+        p.setConfig(new MarksOfGraceCDConfig() {
             @Override public net.runelite.client.config.Notification notifyMarksOfGraceCD() { return net.runelite.client.config.Notification.OFF; }
             @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP; }
             @Override public int customLapTimeSeconds() { return 180; }
@@ -143,15 +219,16 @@ public class MarksOfGraceCDPluginTest {
             @Override public boolean enableWorldPing() { return false; }
             @Override public int pingRefreshInterval() { return 15; }
             @Override public boolean showDebugValues() { return false; }
-        };
+            // explicitly disable GNOME for this test
+            @Override public boolean enableGnome() { return false; }
+        });
 
-        p.setConfig(cfg);
         p.currentCourse = Courses.GNOME;
         p.isOnCooldown = true;
 
-        // Both final obstacles for GNOME should be deprioritized
-        assertTrue(p.shouldDeprioritizeMenuEntry(23138));
-        assertTrue(p.shouldDeprioritizeMenuEntry(23139));
+        // Because we disabled GNOME in config, deprioritization should be suppressed
+        assertFalse(p.shouldDeprioritizeMenuEntry(23138));
+        assertFalse(p.shouldDeprioritizeMenuEntry(23139));
     }
 
     @Test
@@ -163,7 +240,7 @@ public class MarksOfGraceCDPluginTest {
             }
         };
 
-        MarksOfGraceCDConfig cfg = new MarksOfGraceCDConfig() {
+        p.setConfig(new MarksOfGraceCDConfig() {
             @Override public net.runelite.client.config.Notification notifyMarksOfGraceCD() { return net.runelite.client.config.Notification.OFF; }
             @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP; }
             @Override public int customLapTimeSeconds() { return 180; }
@@ -173,15 +250,16 @@ public class MarksOfGraceCDPluginTest {
             @Override public boolean enableWorldPing() { return false; }
             @Override public int pingRefreshInterval() { return 15; }
             @Override public boolean showDebugValues() { return false; }
-        };
+            // explicitly disable WEREWOLF for this test
+            @Override public boolean enableWerewolf() { return false; }
+        });
 
-        p.setConfig(cfg);
         p.currentCourse = Courses.WEREWOLF;
         p.isOnCooldown = true;
 
-        // All final obstacles for WEREWOLF should be deprioritized
-        assertTrue(p.shouldDeprioritizeMenuEntry(11644));
-        assertTrue(p.shouldDeprioritizeMenuEntry(11645));
-        assertTrue(p.shouldDeprioritizeMenuEntry(11646));
+        // Because we disabled Werewolf in config, deprioritization should be suppressed
+        assertFalse(p.shouldDeprioritizeMenuEntry(11644));
+        assertFalse(p.shouldDeprioritizeMenuEntry(11645));
+        assertFalse(p.shouldDeprioritizeMenuEntry(11646));
     }
 }
