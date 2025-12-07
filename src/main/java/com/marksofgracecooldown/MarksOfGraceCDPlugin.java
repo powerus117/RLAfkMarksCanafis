@@ -180,6 +180,9 @@ public class MarksOfGraceCDPlugin extends Plugin {
         if (currentCourse == null)
             return;
 
+        // Respect per-course toggle
+        if (!isCourseEnabled(currentCourse)) return;
+
         final TileItem item = itemSpawned.getItem();
 
         if (item.getId() == ItemID.GRACE) {
@@ -192,6 +195,9 @@ public class MarksOfGraceCDPlugin extends Plugin {
     public void onMenuEntryAdded(MenuEntryAdded e) {
         if (!isOnCooldown || currentCourse == null)
             return;
+
+        // Respect per-course toggle
+        if (!isCourseEnabled(currentCourse)) return;
 
         // Determine configured behaviour
         MarksOfGraceCDConfig.SwapLeftClickMode mode = config.swapLeftClickMode();
@@ -222,6 +228,9 @@ public class MarksOfGraceCDPlugin extends Plugin {
     boolean shouldDeprioritizeMenuEntry(int obstacleId) {
         if (!isOnCooldown || currentCourse == null) return false;
 
+        // Respect per-course toggle
+        if (!isCourseEnabled(currentCourse)) return false;
+
         MarksOfGraceCDConfig.SwapLeftClickMode mode = config.swapLeftClickMode();
         if (mode == MarksOfGraceCDConfig.SwapLeftClickMode.OFF) return false;
 
@@ -234,6 +243,45 @@ public class MarksOfGraceCDPlugin extends Plugin {
 
         int thresholdSeconds = getLapThresholdSeconds(currentCourse);
         return (millisLeft / 1000) < thresholdSeconds;
+    }
+
+    // Helper to check whether the plugin is enabled for a given course based on config toggles.
+    boolean isCourseEnabled(Courses course) {
+        if (course == null) return true;
+        switch (course) {
+            case DRAYNOR:
+                return config.enableDraynor();
+            case AL_KHARID:
+                return config.enableAlKharid();
+            case VARROCK:
+                return config.enableVarrock();
+            case CANIFIS:
+                return config.enableCanifis();
+            case FALADOR:
+                return config.enableFalador();
+            case SEERS:
+                return config.enableSeers();
+            case POLLNIVNEACH:
+                return config.enablePollnivneach();
+            case RELLEKA:
+                return config.enableRelleka();
+            case ARDOUGNE:
+                return config.enableArdougne();
+            case GNOME:
+                return config.enableGnome();
+            case SHAYZIEN_BASIC:
+                return config.enableShayzienBasic();
+            case BARBARIAN:
+                return config.enableBarbarian();
+            case SHAYZIEN_ADVANCED:
+                return config.enableShayzienAdvanced();
+            case APE_ATOLL:
+                return config.enableApeAtoll();
+            case WEREWOLF:
+                return config.enableWerewolf();
+            default:
+                return true;
+        }
     }
 
     /**
