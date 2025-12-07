@@ -17,7 +17,9 @@ public interface MarksOfGraceCDConfig extends Config {
     @ConfigItem(
             keyName = "swapLeftClickOnWait",
             name = "Swap left click on wait",
-            description = "Swaps left click of last obstacle while wait is on to prevent accidental lap completion",
+            description =
+                    "Swaps left click of the last obstacle while wait is on<br>" +
+                    "to prevent accidental lap completion.",
             position = 1
     )
     default boolean swapLeftClickOnWait() {
@@ -27,7 +29,9 @@ public interface MarksOfGraceCDConfig extends Config {
     @ConfigItem(
             keyName = "swapLeftClickTimeLeft",
             name = "Swap left click on time left",
-            description = "Only swap left click when the cooldown time remaining is below this number.",
+            description =
+                    "Only swap the left click when the cooldown time<br>" +
+                    "remaining is below this number.",
             position = 2
     )
     @Units(Units.SECONDS)
@@ -38,7 +42,10 @@ public interface MarksOfGraceCDConfig extends Config {
     @ConfigItem(
             keyName = "useShortArdougneTimer",
             name = "Use short Ardougne timer",
-            description = "When having the elite Ardougne diary, there is a 50% chance to reduce the Ardougne cooldown to 2 min. Would you want to be notified after the reduced time or normal time?",
+            description =
+                    "If you have the elite Ardougne diary, there is a<br>" +
+                    "50% chance the Ardougne cooldown is reduced to 2 min.<br>" +
+                    "Choose whether to notify after the reduced or normal time.",
             position = 3
     )
     default boolean useShortArdougneTimer() {
@@ -47,7 +54,9 @@ public interface MarksOfGraceCDConfig extends Config {
 
     @ConfigSection(
             name = "Advanced",
-            description = "Advanced settings (opt-in). These affect network checks and are normally left at defaults.",
+            description =
+                    "Advanced settings (opt-in). These affect network<br>" +
+                    "checks and are normally left at defaults.",
             position = 4,
             closedByDefault = true
     )
@@ -56,7 +65,11 @@ public interface MarksOfGraceCDConfig extends Config {
     @ConfigItem(
             keyName = "enableWorldPing",
             name = "Enable world ping",
-            description = "When enabled the plugin will periodically measure latency to your current RuneScape world using RuneLite's ping implementation. Disable to avoid any additional network traffic.",
+            description =
+                    "When enabled, the plugin will periodically measure<br>" +
+                    "latency to your current RuneScape world using<br>" +
+                    "RuneLite's ping implementation. Disable to avoid<br>" +
+                    "any additional network probes.",
             position = 5,
             section = advanced
     )
@@ -67,7 +80,10 @@ public interface MarksOfGraceCDConfig extends Config {
     @ConfigItem(
             keyName = "pingRefreshInterval",
             name = "Ping refresh interval",
-            description = "How often (seconds) to refresh the world ping when enabled; larger values reduce network activity. Minimum 1 second.",
+            description =
+                    "How often (seconds) to refresh the world ping<br>" +
+                    "when enabled. Larger values reduce network<br>" +
+                    "activity. Minimum 1 second.",
             position = 6,
             section = advanced
     )
@@ -79,7 +95,12 @@ public interface MarksOfGraceCDConfig extends Config {
     @ConfigItem(
             keyName = "timerBufferSeconds",
             name = "Timer buffer (seconds)",
-            description = "Extra buffer added when calculating whether the Marks of Grace cooldown has expired. Default is 0 because world-ping is used; increase only if the overlay reports the cooldown as finished before a mark can actually spawn (try 1-3 seconds).",
+            description =
+                    "Extra buffer added when checking whether the<br>" +
+                    "Marks of Grace cooldown has expired. Default is 0<br>" +
+                    "because world-ping is used; increase only if the<br>" +
+                    "overlay reports cooldown finished before a mark<br>" +
+                    "can actually spawn (try 1-3 seconds).",
             position = 7,
             section = advanced
     )
@@ -91,7 +112,10 @@ public interface MarksOfGraceCDConfig extends Config {
     @ConfigItem(
             keyName = "showDebugValues",
             name = "Show debug values",
-            description = "Displays plugin debug values such as measured world ping and internal timings (for troubleshooting). When enabled, ping measurements will also be visible in the overlay.",
+            description =
+                    "Displays plugin debug values such as measured<br>" +
+                    "world ping and internal timings for troubleshooting.<br>" +
+                    "Enabling this also shows ping in the overlay.",
             position = 8,
             section = advanced
     )
