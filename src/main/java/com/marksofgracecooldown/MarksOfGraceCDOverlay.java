@@ -41,16 +41,30 @@ class MarksOfGraceCDOverlay extends OverlayPanel {
             return null;
         }
 
-        if (plugin.isOnCooldown) {
-            panelComponent.getChildren().add(TitleComponent.builder()
-                    .text("Wait")
-                    .color(Color.RED)
-                    .build());
-        } else {
+        // Determine cooldown state: Run (not on cooldown), XP (on cooldown but safe to complete laps), Wait (on cooldown and near end)
+        if (!plugin.isOnCooldown) {
             panelComponent.getChildren().add(TitleComponent.builder()
                     .text("Run")
                     .color(Color.GREEN)
                     .build());
+        } else {
+            long millisLeft = Math.max(plugin.getCooldownTimestamp(false) - currentMillis, 0);
+            int secondsLeft = (int) Math.ceil((double) millisLeft / 1000);
+            int thresholdSeconds = plugin.currentCourse != null ? plugin.getLapThresholdSeconds(plugin.currentCourse) : 0;
+
+            if (secondsLeft >= thresholdSeconds) {
+                // You can safely complete laps for XP
+                panelComponent.getChildren().add(TitleComponent.builder()
+                        .text("XP")
+                        .color(Color.ORANGE)
+                        .build());
+            } else {
+                // Too close to cooldown end - wait
+                panelComponent.getChildren().add(TitleComponent.builder()
+                        .text("Wait")
+                        .color(Color.RED)
+                        .build());
+            }
         }
 
         long millisLeft = Math.max(plugin.getCooldownTimestamp(false) - currentMillis, 0);
