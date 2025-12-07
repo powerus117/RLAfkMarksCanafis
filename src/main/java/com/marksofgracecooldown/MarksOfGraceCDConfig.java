@@ -15,29 +15,53 @@ public interface MarksOfGraceCDConfig extends Config {
     }
 
     @ConfigItem(
+            keyName = "optimalTimeBufferSeconds",
+            name = "Optimal time buffer (seconds)",
+            description =
+                    "Adds extra seconds to the optimal time so users<br>" +
+                    "have some room for mistakes (for example, set 2-4).<br>" +
+                    "This is added on top of the computed optimal time.",
+            position = 1
+    )
+    @Units(Units.SECONDS)
+    default int optimalTimeBufferSeconds() { return 2; }
+
+    @ConfigItem(
             keyName = "swapLeftClickOnWait",
             name = "Swap left click on wait",
             description =
                     "Swaps left click of the last obstacle while wait is on<br>" +
                     "to prevent accidental lap completion.",
-            position = 1
+            position = 2
     )
     default boolean swapLeftClickOnWait() {
         return false;
     }
 
     @ConfigItem(
-            keyName = "swapLeftClickTimeLeft",
-            name = "Swap left click on time left",
+            keyName = "customLapTimeSeconds",
+            name = "Custom lap time (seconds)",
             description =
-                    "Only swap the left click when the cooldown time<br>" +
-                    "remaining is below this number.",
-            position = 2
+                    "When 'Use custom lap time' is enabled, this value will be used<br>" +
+                    "as the lap-time threshold (in seconds) to disable the final obstacle.<br>" +
+                    "Leave disabled to use the course-specific optimal times (recommended).",
+            position = 3
     )
     @Units(Units.SECONDS)
-    default int swapLeftClickTimeLeft() {
+    default int customLapTimeSeconds() {
         return 180;
     }
+
+    @ConfigItem(
+            keyName = "useCustomLapTime",
+            name = "Use custom lap time (override optimal)",
+            description =
+                    "When enabled, the plugin will use the 'Custom lap time (seconds)' value<br>" +
+                    "as the lap-time threshold instead of the course-specific optimal time.<br>" +
+                    "Disable to use the automatic optimal times (recommended).",
+            position = 4
+    )
+    default boolean useCustomLapTime() { return false; }
 
     @ConfigItem(
             keyName = "useShortArdougneTimer",
@@ -46,21 +70,58 @@ public interface MarksOfGraceCDConfig extends Config {
                     "If you have the elite Ardougne diary, there is a<br>" +
                     "50% chance the Ardougne cooldown is reduced to 2 min.<br>" +
                     "Choose whether to notify after the reduced or normal time.",
-            position = 3
+            position = 5
     )
     default boolean useShortArdougneTimer() {
-        return true;
+        return false;
     }
+
+    @ConfigItem(
+            keyName = "useSeersTeleport",
+            name = "Use Seers bank teleport",
+            description =
+                    "Whether to use the Seers bank teleport shortcut.<br>" +
+                    "Using the Camelot teleport requires the Hard Kandarin diary.<br>" +
+                    "The plugin will attempt to auto-detect the diary and will<br>" +
+                    "show the detected status below; if detection fails, use the<br>" +
+                    "override in Advanced.",
+            position = 6
+    )
+    default boolean useSeersTeleport() {return false;}
+
+    @ConfigItem(
+            keyName = "kandarinDiaryDetected",
+            name = "Hard Kandarin diary detected",
+            description =
+                    "Indicates whether the plugin detected the Hard Kandarin diary<br>" +
+                    "as completed for your account. This is updated automatically<br>" +
+                    "on login; if it is incorrect, use the override in Advanced.",
+            position = 7
+    )
+    default boolean kandarinDiaryDetected() { return false; }
 
     @ConfigSection(
             name = "Advanced",
             description =
                     "Advanced settings (opt-in). These affect network<br>" +
                     "checks and are normally left at defaults.",
-            position = 4,
+            position = 8,
             closedByDefault = true
     )
     String advanced = "advanced";
+
+    @ConfigItem(
+            keyName = "assumeHardKandarinDiary",
+            name = "Assume Hard Kandarin diary (absolute override)",
+            description =
+                    "ABSOLUTE OVERRIDE: If enabled, the plugin will assume you have<br>" +
+                    "completed the Hard Kandarin diary even if automatic detection<br>" +
+                    "fails. Only use this if you are certain you have the diary.<br>" +
+                    "Using this incorrectly may result in incorrect optimal times.",
+            position = 9,
+            section = advanced
+    )
+    default boolean assumeHardKandarinDiary() { return false; }
 
     @ConfigItem(
             keyName = "enableWorldPing",
@@ -70,7 +131,7 @@ public interface MarksOfGraceCDConfig extends Config {
                     "latency to your current RuneScape world using<br>" +
                     "RuneLite's ping implementation. Disable to avoid<br>" +
                     "any additional network probes.",
-            position = 5,
+            position = 10,
             section = advanced
     )
     default boolean enableWorldPing() {
@@ -84,7 +145,7 @@ public interface MarksOfGraceCDConfig extends Config {
                     "How often (seconds) to refresh the world ping<br>" +
                     "when enabled. Larger values reduce network<br>" +
                     "activity. Minimum 1 second.",
-            position = 6,
+            position = 11,
             section = advanced
     )
     @Units(Units.SECONDS)
@@ -101,7 +162,7 @@ public interface MarksOfGraceCDConfig extends Config {
                     "because world-ping is used; increase only if the<br>" +
                     "overlay reports cooldown finished before a mark<br>" +
                     "can actually spawn (try 1-3 seconds).",
-            position = 7,
+            position = 12,
             section = advanced
     )
     @Units(Units.SECONDS)
@@ -116,7 +177,7 @@ public interface MarksOfGraceCDConfig extends Config {
                     "Displays plugin debug values such as measured<br>" +
                     "world ping and internal timings for troubleshooting.<br>" +
                     "Enabling this also shows ping in the overlay.",
-            position = 8,
+            position = 13,
             section = advanced
     )
     default boolean showDebugValues() {
