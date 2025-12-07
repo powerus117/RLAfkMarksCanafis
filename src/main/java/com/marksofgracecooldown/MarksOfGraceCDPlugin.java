@@ -78,13 +78,12 @@ public class MarksOfGraceCDPlugin extends Plugin {
     }
 
     // Package-private setter used by tests to inject a fake config without reflection
-    void setConfig(MarksOfGraceCDConfig config)
-    {
+    void setConfig(MarksOfGraceCDConfig config) {
         this.config = config;
     }
 
     @Override
-    protected void startUp() throws Exception {
+    protected void startUp() {
         overlayManager.add(marksCooldownOverlay);
         kandarinDetectionConfigUpdated = false;
         // Attempt to update kandarin detection status (will only take effect if logged in)
@@ -102,7 +101,7 @@ public class MarksOfGraceCDPlugin extends Plugin {
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
         overlayManager.remove(marksCooldownOverlay);
         if (pingExecutor != null) {
             pingExecutor.shutdownNow();
@@ -194,7 +193,7 @@ public class MarksOfGraceCDPlugin extends Plugin {
         if (!isOnCooldown || currentCourse == null)
             return;
 
-        if (config.swapLeftClickOnWait() && e.getIdentifier() == currentCourse.getLastObstacleId()) {
+        if (config.swapLeftClickOnWait() && currentCourse.containsLastObstacle(e.getIdentifier())) {
             long millisLeft = getCooldownTimestamp(true) - Instant.now().toEpochMilli();
             if (millisLeft <= 0) {
                 return;
@@ -207,6 +206,21 @@ public class MarksOfGraceCDPlugin extends Plugin {
                 e.getMenuEntry().setDeprioritized(true);
             }
         }
+    }
+
+    // Package-private helper to determine whether a menu entry for a given obstacle id should be deprioritized.
+    // This mirrors the logic in onMenuEntryAdded, but accepts an obstacle id and is easier to unit-test.
+    boolean shouldDeprioritizeMenuEntry(int obstacleId) {
+        if (!isOnCooldown || currentCourse == null) return false;
+        if (!config.swapLeftClickOnWait()) return false;
+
+        if (!currentCourse.containsLastObstacle(obstacleId)) return false;
+
+        long millisLeft = getCooldownTimestamp(true) - Instant.now().toEpochMilli();
+        if (millisLeft <= 0) return false;
+
+        int thresholdSeconds = getLapThresholdSeconds(currentCourse);
+        return (millisLeft / 1000) < thresholdSeconds;
     }
 
     /**
