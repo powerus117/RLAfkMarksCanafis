@@ -17,14 +17,13 @@ public class LapThresholdTest {
         MarksOfGraceCDConfig cfg = new MarksOfGraceCDConfig() {
             @Override public int customLapTimeSeconds() { return 200; }
             @Override public boolean useCustomLapTime() { return false; }
-            @Override public int optimalTimeBufferSeconds() { return 2; }
+            @Override public int lapTimeBuffer() { return 2; }
             @Override public boolean useSeersTeleport() { return false; }
             @Override public boolean assumeHardKandarinDiary() { return false; }
             // Unused defaults
             @Override public boolean swapLeftClickOnWait() { return false; }
             @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
             @Override public boolean useShortArdougneTimer() { return false; }
-            @Override public boolean kandarinDiaryDetected() { return false; }
             @Override public boolean enableWorldPing() { return false; }
             @Override public int pingRefreshInterval() { return 15; }
             @Override public int timerBufferSeconds() { return 0; }
@@ -52,13 +51,12 @@ public class LapThresholdTest {
         MarksOfGraceCDConfig cfg2 = new MarksOfGraceCDConfig() {
             @Override public int customLapTimeSeconds() { return 123; }
             @Override public boolean useCustomLapTime() { return true; }
-            @Override public int optimalTimeBufferSeconds() { return 0; }
+            @Override public int lapTimeBuffer() { return 0; }
             @Override public boolean useSeersTeleport() { return false; }
             @Override public boolean assumeHardKandarinDiary() { return false; }
             @Override public boolean swapLeftClickOnWait() { return false; }
             @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
             @Override public boolean useShortArdougneTimer() { return false; }
-            @Override public boolean kandarinDiaryDetected() { return false; }
             @Override public boolean enableWorldPing() { return false; }
             @Override public int pingRefreshInterval() { return 15; }
             @Override public int timerBufferSeconds() { return 0; }
