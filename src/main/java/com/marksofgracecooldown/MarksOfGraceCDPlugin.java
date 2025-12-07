@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.GameState;
 import net.runelite.api.TileItem;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemSpawned;
@@ -27,7 +28,6 @@ import net.runelite.http.api.worlds.WorldResult;
 import javax.inject.Inject;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -98,29 +98,19 @@ public class MarksOfGraceCDPlugin extends Plugin {
     }
 
     private void refreshWorldPing() {
-        try {
-            if (worldService == null || client == null) return;
-            WorldResult wr = worldService.getWorlds();
-            if (wr == null) return;
-            List<World> worlds = wr.getWorlds();
-            if (worlds == null || worlds.isEmpty()) return;
-            int currentWorldId = client.getWorld();
-            World match = null;
-            for (World w : worlds) {
-                if (w.getId() == currentWorldId) {
-                    match = w;
-                    break;
-                }
-            }
+        WorldResult worldResult = worldService.getWorlds();
+        // There is no reason to ping the current world if not logged in, as the overlay doesn't draw
+        if (worldResult == null || client.getGameState() != GameState.LOGGED_IN) return;
+        final World currentWorld = worldResult.findWorld(client.getWorld());
+        if (currentWorld == null) return;
 
-            if (match != null) {
-                // Ping.ping is a blocking call; run in this background thread
-                int ping = Ping.ping(match);
-                if (ping >= 0) {
-                    lastWorldPing = ping;
-                } else {
-                    lastWorldPing = -1;
-                }
+        try {
+            // Ping.ping is a blocking call; run in this background thread
+            int ping = Ping.ping(currentWorld);
+            if (ping >= 0) {
+                lastWorldPing = ping;
+            } else {
+                lastWorldPing = -1;
             }
         } catch (Throwable t) {
             log.debug("Failed to refresh world ping: {}", t.toString());
