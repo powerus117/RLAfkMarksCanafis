@@ -1,6 +1,5 @@
 package com.marksofgracecooldown;
 
-import com.marksofgracecooldown.ntp.NtpClient;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.LineComponent;
@@ -70,39 +69,13 @@ class MarksOfGraceCDOverlay extends OverlayPanel {
         }
 
         if (config.showDebugValues()) {
+            int ping = plugin.getLastWorldPing();
             panelComponent.getChildren().add(LineComponent.builder()
-                    .left("NTP State:")
-                    .right(String.valueOf(NtpClient.SyncState))
-                    .build());
-
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Time offset:")
-                    .right(getReadableOffset(NtpClient.SyncedOffsetMillis))
+                    .left("World ping:")
+                    .right(ping >= 0 ? ping + "ms" : "N/A")
                     .build());
         }
 
         return super.render(graphics);
-    }
-
-    private String getReadableOffset(long offset) {
-        if (Math.abs(offset) < 1000)
-            return offset + "ms";
-
-        offset /= 1000; // Seconds
-
-        if (Math.abs(offset) < 1000)
-            return offset + "s";
-
-        offset /= 60; // Minutes
-
-        if (Math.abs(offset) < 1000)
-            return offset + "m";
-
-        offset /= 60; // Hours
-
-        if (Math.abs(offset) < 1000)
-            return offset + "h";
-
-        return "LOTS";
     }
 }
