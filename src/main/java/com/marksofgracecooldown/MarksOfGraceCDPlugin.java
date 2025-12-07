@@ -225,7 +225,7 @@ public class MarksOfGraceCDPlugin extends Plugin {
                         (config.assumeHardKandarinDiary() || hasHardKandarinDiary()))
         );
 
-        int combined = baseOptimal + config.optimalTimeBufferSeconds();
+        int combined = baseOptimal + config.lapTimeBuffer();
         return Math.max(0, combined);
     }
 
