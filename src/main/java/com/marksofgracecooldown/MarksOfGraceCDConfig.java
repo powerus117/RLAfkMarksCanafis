@@ -29,8 +29,8 @@ public interface MarksOfGraceCDConfig extends Config {
             keyName = "swapLeftClickOnWait",
             name = "Swap left click on wait",
             description =
-                    "Swaps left click of the last obstacle while wait is on<br>" +
-                    "to prevent accidental lap completion.",
+                    "Swaps left click of the last obstacle while the cooldown<br>" +
+                    "is less then a full lap to prevent accidental lap completion.",
             position = 2
     )
     default boolean swapLeftClickOnWait() {
