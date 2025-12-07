@@ -122,4 +122,66 @@ public class MarksOfGraceCDPluginTest {
         long ts = plugin.getCooldownTimestamp(true);
         assertEquals(expected, ts);
     }
+
+    @Test
+    public void testDeprioritizeAllFinalObstacles_gnome() {
+        // Create plugin that simulates a short time-left by overriding getCooldownTimestamp
+        MarksOfGraceCDPlugin p = new MarksOfGraceCDPlugin() {
+            @Override
+            public long getCooldownTimestamp(boolean checkForReduced) {
+                return Instant.now().toEpochMilli() + 1000; // 1s left
+            }
+        };
+
+        MarksOfGraceCDConfig cfg = new MarksOfGraceCDConfig() {
+            @Override public net.runelite.client.config.Notification notifyMarksOfGraceCD() { return net.runelite.client.config.Notification.OFF; }
+            @Override public boolean swapLeftClickOnWait() { return true; }
+            @Override public int customLapTimeSeconds() { return 180; }
+            @Override public int timerBufferSeconds() { return 0; }
+            @Override public boolean useShortArdougneTimer() { return true; }
+            @Override public boolean useSeersTeleport() { return false; }
+            @Override public boolean enableWorldPing() { return false; }
+            @Override public int pingRefreshInterval() { return 15; }
+            @Override public boolean showDebugValues() { return false; }
+        };
+
+        p.setConfig(cfg);
+        p.currentCourse = Courses.GNOME;
+        p.isOnCooldown = true;
+
+        // Both final obstacles for GNOME should be deprioritized
+        assertTrue(p.shouldDeprioritizeMenuEntry(23138));
+        assertTrue(p.shouldDeprioritizeMenuEntry(23139));
+    }
+
+    @Test
+    public void testDeprioritizeAllFinalObstacles_werewolf() {
+        MarksOfGraceCDPlugin p = new MarksOfGraceCDPlugin() {
+            @Override
+            public long getCooldownTimestamp(boolean checkForReduced) {
+                return Instant.now().toEpochMilli() + 1000; // 1s left
+            }
+        };
+
+        MarksOfGraceCDConfig cfg = new MarksOfGraceCDConfig() {
+            @Override public net.runelite.client.config.Notification notifyMarksOfGraceCD() { return net.runelite.client.config.Notification.OFF; }
+            @Override public boolean swapLeftClickOnWait() { return true; }
+            @Override public int customLapTimeSeconds() { return 180; }
+            @Override public int timerBufferSeconds() { return 0; }
+            @Override public boolean useShortArdougneTimer() { return true; }
+            @Override public boolean useSeersTeleport() { return false; }
+            @Override public boolean enableWorldPing() { return false; }
+            @Override public int pingRefreshInterval() { return 15; }
+            @Override public boolean showDebugValues() { return false; }
+        };
+
+        p.setConfig(cfg);
+        p.currentCourse = Courses.WEREWOLF;
+        p.isOnCooldown = true;
+
+        // All final obstacles for WEREWOLF should be deprioritized
+        assertTrue(p.shouldDeprioritizeMenuEntry(11644));
+        assertTrue(p.shouldDeprioritizeMenuEntry(11645));
+        assertTrue(p.shouldDeprioritizeMenuEntry(11646));
+    }
 }
