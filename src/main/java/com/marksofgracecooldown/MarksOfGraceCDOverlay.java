@@ -66,7 +66,7 @@ class MarksOfGraceCDOverlay extends OverlayPanel {
                     ("useSeersTeleport".equals(key) && config.useSeersTeleport() &&
                             (config.assumeHardKandarinDiary() || plugin.hasHardKandarinDiary()))
             );
-            int combined = Math.max(0, baseOptimal + config.optimalTimeBufferSeconds());
+            int combined = Math.max(0, baseOptimal + config.lapTimeBuffer());
 
             panelComponent.getChildren().add(LineComponent.builder()
                     .left("Base lap time:")
