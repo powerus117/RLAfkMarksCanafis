@@ -193,18 +193,27 @@ public class MarksOfGraceCDPlugin extends Plugin {
         if (!isOnCooldown || currentCourse == null)
             return;
 
-        if (config.swapLeftClickOnWait() && currentCourse.containsLastObstacle(e.getIdentifier())) {
-            long millisLeft = getCooldownTimestamp(true) - Instant.now().toEpochMilli();
-            if (millisLeft <= 0) {
-                return;
-            }
+        // Determine configured behaviour
+        MarksOfGraceCDConfig.SwapLeftClickMode mode = config.swapLeftClickMode();
 
-            // Determine threshold seconds: either custom per-user value or computed optimal time for the course + buffer
-            int thresholdSeconds = getLapThresholdSeconds(currentCourse);
+        if (mode == MarksOfGraceCDConfig.SwapLeftClickMode.OFF) return;
 
-            if (millisLeft / 1000 < thresholdSeconds) {
-                e.getMenuEntry().setDeprioritized(true);
-            }
+        if (!currentCourse.containsLastObstacle(e.getIdentifier())) return;
+
+        long millisLeft = getCooldownTimestamp(true) - Instant.now().toEpochMilli();
+        if (millisLeft <= 0) {
+            return;
+        }
+
+        if (mode == MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_NOT_EXPIRED) {
+            e.getMenuEntry().setDeprioritized(true);
+            return;
+        }
+
+        // WHEN_CANNOT_COMPLETE_LAP (previous behaviour)
+        int thresholdSeconds = getLapThresholdSeconds(currentCourse);
+        if (millisLeft / 1000 < thresholdSeconds) {
+            e.getMenuEntry().setDeprioritized(true);
         }
     }
 
@@ -212,12 +221,16 @@ public class MarksOfGraceCDPlugin extends Plugin {
     // This mirrors the logic in onMenuEntryAdded, but accepts an obstacle id and is easier to unit-test.
     boolean shouldDeprioritizeMenuEntry(int obstacleId) {
         if (!isOnCooldown || currentCourse == null) return false;
-        if (!config.swapLeftClickOnWait()) return false;
+
+        MarksOfGraceCDConfig.SwapLeftClickMode mode = config.swapLeftClickMode();
+        if (mode == MarksOfGraceCDConfig.SwapLeftClickMode.OFF) return false;
 
         if (!currentCourse.containsLastObstacle(obstacleId)) return false;
 
         long millisLeft = getCooldownTimestamp(true) - Instant.now().toEpochMilli();
         if (millisLeft <= 0) return false;
+
+        if (mode == MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_NOT_EXPIRED) return true;
 
         int thresholdSeconds = getLapThresholdSeconds(currentCourse);
         return (millisLeft / 1000) < thresholdSeconds;
