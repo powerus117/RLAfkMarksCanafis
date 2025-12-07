@@ -61,20 +61,34 @@ public class MarksOfGraceCDPlugin extends Plugin {
     private MarksOfGraceCDOverlay marksCooldownOverlay;
     @Inject
     private WorldService worldService;
+    @Inject
+    private ConfigManager configManager;
     private ScheduledExecutorService pingExecutor;
     // last measured ping to the current RS world in ms; -1 == unknown
     @Setter
     @Getter
     private volatile int lastWorldPing = -1;
 
+    // track whether we've updated the kandarin detection config for this login session
+    private volatile boolean kandarinDetectionConfigUpdated = false;
+
     @Provides
     MarksOfGraceCDConfig provideConfig(ConfigManager configManager) {
         return configManager.getConfig(MarksOfGraceCDConfig.class);
     }
 
+    // Package-private setter used by tests to inject a fake config without reflection
+    void setConfig(MarksOfGraceCDConfig config)
+    {
+        this.config = config;
+    }
+
     @Override
     protected void startUp() throws Exception {
         overlayManager.add(marksCooldownOverlay);
+        kandarinDetectionConfigUpdated = false;
+        // Attempt to update kandarin detection status (will only take effect if logged in)
+        updateKandarinDetectedConfigIfNeeded();
 
         // Start background executor to periodically refresh the ping to the current world if enabled
         if (config.enableWorldPing()) {
@@ -95,6 +109,10 @@ public class MarksOfGraceCDPlugin extends Plugin {
             pingExecutor = null;
         }
         lastWorldPing = -1;
+        // reset the kandarin detection flag so we update next login
+        kandarinDetectionConfigUpdated = false;
+        // clear detection flag in config UI
+        configManager.setConfiguration("AfkMarksCanafis", "kandarinDiaryDetected", false);
     }
 
     private void refreshWorldPing() {
@@ -137,6 +155,10 @@ public class MarksOfGraceCDPlugin extends Plugin {
 
     @Subscribe
     public void onGameTick(GameTick tick) {
+        if (!kandarinDetectionConfigUpdated) {
+            updateKandarinDetectedConfigIfNeeded();
+        }
+
         if (isOnCooldown) {
             if (lastCompleteMarkTimeMillis == 0) {
                 isOnCooldown = false;
@@ -174,10 +196,37 @@ public class MarksOfGraceCDPlugin extends Plugin {
 
         if (config.swapLeftClickOnWait() && e.getIdentifier() == currentCourse.getLastObstacleId()) {
             long millisLeft = getCooldownTimestamp(true) - Instant.now().toEpochMilli();
-            if (millisLeft > 0 && millisLeft / 1000 < config.swapLeftClickTimeLeft()) {
+            if (millisLeft <= 0) {
+                return;
+            }
+
+            // Determine threshold seconds: either custom per-user value or computed optimal time for the course + buffer
+            int thresholdSeconds = getLapThresholdSeconds(currentCourse);
+
+            if (millisLeft / 1000 < thresholdSeconds) {
                 e.getMenuEntry().setDeprioritized(true);
             }
         }
+    }
+
+    /**
+     * Compute the lap-time threshold in seconds used for swapping/deprioritizing the last obstacle.
+     * If the user enabled the custom-lap-time override, return the configured custom seconds.
+     * Otherwise, compute the course optimal time (considering course-specific toggles) and add the
+     * user's optimalTimeBufferSeconds to allow forgiving timing.
+     */
+    int getLapThresholdSeconds(Courses course) {
+        if (config.useCustomLapTime()) {
+            return Math.max(0, config.customLapTimeSeconds());
+        }
+
+        int baseOptimal = course.getOptimalTime(key ->
+                ("useSeersTeleport".equals(key) && config.useSeersTeleport() &&
+                        (config.assumeHardKandarinDiary() || hasHardKandarinDiary()))
+        );
+
+        int combined = baseOptimal + config.optimalTimeBufferSeconds();
+        return Math.max(0, combined);
     }
 
     public long getCooldownTimestamp(boolean checkForReduced) {
@@ -189,18 +238,15 @@ public class MarksOfGraceCDPlugin extends Plugin {
         long localCooldownMillis = minuteTruncatedMillis + (MARK_COOLDOWN_MINUTES * MILLIS_PER_MINUTE);
         long leewayAdjusted = localCooldownMillis + ((long) config.timerBufferSeconds() * 1000);
 
+        // Apply Ardougne elite diary reduced cooldown only when user opted into using the short Ardougne timer
         if (checkForReduced && hasReducedCooldown && config.useShortArdougneTimer())
             leewayAdjusted -= MILLIS_PER_MINUTE;
 
         // If we have a recent ping to the world, approximate one-way delay and subtract it
-        try {
-            int ping = lastWorldPing;
-            if (ping > 0) {
-                long oneWay = ping / 2L;
-                leewayAdjusted -= oneWay;
-            }
-        } catch (Throwable t) {
-            // ignore and fall back to local-only timing
+        int ping = lastWorldPing;
+        if (ping > 0) {
+            long oneWay = ping / 2L;
+            leewayAdjusted -= oneWay;
         }
 
         // Safety: don't return a timestamp earlier than the recorded completion time
@@ -209,5 +255,29 @@ public class MarksOfGraceCDPlugin extends Plugin {
         }
 
         return leewayAdjusted;
+    }
+
+    /**
+     * Detect whether the player has completed the Hard Kandarin diary using a direct VarbitID lookup.
+     */
+    public boolean hasHardKandarinDiary() {
+        return client.getVarbitValue(VarbitID.KANDARIN_DIARY_HARD_COMPLETE) == 1;
+    }
+
+    private void updateKandarinDetectedConfigIfNeeded() {
+        if (kandarinDetectionConfigUpdated) return;
+        if (client == null || client.getGameState() != GameState.LOGGED_IN) return;
+
+        boolean detected = hasHardKandarinDiary();
+        // Respect the override - don't change the UI value if user manually set override true
+        // We still want the UI to show true when detected or when user has assume override
+        if (config.assumeHardKandarinDiary()) {
+            // if user has set the assume override, show detected as true in UI as well
+            configManager.setConfiguration("AfkMarksCanafis", "kandarinDiaryDetected", true);
+        } else {
+            configManager.setConfiguration("AfkMarksCanafis", "kandarinDiaryDetected", detected);
+        }
+
+        kandarinDetectionConfigUpdated = true;
     }
 }
