@@ -4,7 +4,6 @@ import net.runelite.client.config.Notification;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.time.Instant;
 
 import static org.junit.Assert.*;
@@ -29,7 +28,7 @@ public class MarksOfGraceCDPluginTest {
             }
 
             @Override
-            public int swapLeftClickTimeLeft() {
+            public int customLapTimeSeconds() {
                 return 180;
             }
 
@@ -40,7 +39,7 @@ public class MarksOfGraceCDPluginTest {
 
             @Override
             public boolean useShortArdougneTimer() {
-                return false;
+                return true;
             }
 
             @Override
@@ -64,10 +63,8 @@ public class MarksOfGraceCDPluginTest {
             }
         };
 
-        // Use reflection to set the private config field on plugin
-        Field configField = MarksOfGraceCDPlugin.class.getDeclaredField("config");
-        configField.setAccessible(true);
-        configField.set(plugin, cfg);
+        // Inject the test config without reflection
+        plugin.setConfig(cfg);
 
         // default values
         plugin.hasReducedCooldown = false;
