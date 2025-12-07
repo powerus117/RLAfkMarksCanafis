@@ -60,6 +60,25 @@ class MarksOfGraceCDOverlay extends OverlayPanel {
                 .right(String.format("%d:%02d", (secondsLeft % 3600) / 60, (secondsLeft % 60)))
                 .build());
 
+        // Debug-only: show optimal lap times and buffer effects
+        if (config.showDebugValues() && plugin.currentCourse != null) {
+            int baseOptimal = plugin.currentCourse.getOptimalTime(key ->
+                    ("useSeersTeleport".equals(key) && config.useSeersTeleport() &&
+                            (config.assumeHardKandarinDiary() || plugin.hasHardKandarinDiary()))
+            );
+            int combined = Math.max(0, baseOptimal + config.optimalTimeBufferSeconds());
+
+            panelComponent.getChildren().add(LineComponent.builder()
+                    .left("Base lap time:")
+                    .right(String.format("%d:%02d", (baseOptimal % 3600) / 60, (baseOptimal % 60)))
+                    .build());
+
+            panelComponent.getChildren().add(LineComponent.builder()
+                    .left("Combined lap time:")
+                    .right(String.format("%d:%02d", (combined % 3600) / 60, (combined % 60)))
+                    .build());
+        }
+
         if (plugin.hasReducedCooldown) {
             long shortTimeSecondsLeft = Math.max(secondsLeft - 60, 0);
             panelComponent.getChildren().add(LineComponent.builder()
