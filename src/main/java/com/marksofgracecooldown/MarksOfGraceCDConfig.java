@@ -25,16 +25,38 @@ public interface MarksOfGraceCDConfig extends Config {
     @Units(Units.SECONDS)
     default int lapTimeBuffer() { return 2; }
 
+    // Replaced the previous boolean setting `swapLeftClickOnWait` with an enum dropdown
+    // to allow three modes: OFF, SWAP_WHEN_CANNOT_COMPLETE_LAP (previous behaviour),
+    // and SWAP_WHEN_NOT_EXPIRED (always swap while cooldown active).
+    enum SwapLeftClickMode {
+        OFF("Off"),
+        WHEN_CANNOT_COMPLETE_LAP("Near end"),
+        WHEN_NOT_EXPIRED("Always");
+
+        private final String label;
+
+        SwapLeftClickMode(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+
     @ConfigItem(
-            keyName = "swapLeftClickOnWait",
-            name = "Swap left click on wait",
+            keyName = "swapLeftClickMode",
+            name = "Swap mode",
             description =
-                    "Swaps left click of the last obstacle while the cooldown<br>" +
-                    "is less then a full lap to prevent accidental lap completion.",
+                    "When to swap/deprioritize left-click on the final obstacle.<br>" +
+                    "Off - never swap.<br>" +
+                    "Near end - swap only if remaining time is less than the lap threshold.<br>" +
+                    "Always - swap whenever the cooldown is active.",
             position = 2
     )
-    default boolean swapLeftClickOnWait() {
-        return false;
+    default SwapLeftClickMode swapLeftClickMode() {
+        return SwapLeftClickMode.OFF; // keep previous default (disabled)
     }
 
     @ConfigItem(
