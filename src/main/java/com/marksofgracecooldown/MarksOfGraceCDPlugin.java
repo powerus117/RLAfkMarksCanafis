@@ -336,6 +336,9 @@ public class MarksOfGraceCDPlugin extends Plugin {
      * Detect whether the player has completed the Hard Kandarin diary using a direct VarbitID lookup.
      */
     public boolean hasHardKandarinDiary() {
+        if (client == null) {
+            return false;
+        }
         return client.getVarbitValue(VarbitID.KANDARIN_DIARY_HARD_COMPLETE) == 1;
     }
 
