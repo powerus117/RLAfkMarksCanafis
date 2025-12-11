@@ -31,6 +31,11 @@ class MarksOfGraceCDOverlay extends OverlayPanel {
             return null;
         }
 
+        // Don't show overlay if the current course is disabled in settings
+        if (plugin.currentCourse != null && !plugin.isCourseEnabled(plugin.currentCourse)) {
+            return null;
+        }
+
         long currentMillis = Instant.now().toEpochMilli();
         long millisSinceLastComplete = currentMillis - plugin.lastCompleteTimeMillis;
 
@@ -74,7 +79,16 @@ class MarksOfGraceCDOverlay extends OverlayPanel {
                 .right(String.format("%d:%02d", (secondsLeft % 3600) / 60, (secondsLeft % 60)))
                 .build());
 
-        // Debug-only: show optimal lap times and buffer effects
+        // Show reduced Ardougne timer right after the main timer (user-facing info)
+        if (plugin.hasReducedCooldown) {
+            long shortTimeSecondsLeft = Math.max(secondsLeft - 60, 0);
+            panelComponent.getChildren().add(LineComponent.builder()
+                    .left("Reduced time:")
+                    .right(String.format("%d:%02d", (shortTimeSecondsLeft % 3600) / 60, (shortTimeSecondsLeft % 60)))
+                    .build());
+        }
+
+        // Debug-only: show optimal lap times, buffer effects, and ping
         if (config.showDebugValues() && plugin.currentCourse != null) {
             int baseOptimal = plugin.currentCourse.getOptimalTime(key ->
                     ("useSeersTeleport".equals(key) && config.useSeersTeleport() &&
@@ -91,17 +105,7 @@ class MarksOfGraceCDOverlay extends OverlayPanel {
                     .left("Combined lap time:")
                     .right(String.format("%d:%02d", (combined % 3600) / 60, (combined % 60)))
                     .build());
-        }
 
-        if (plugin.hasReducedCooldown) {
-            long shortTimeSecondsLeft = Math.max(secondsLeft - 60, 0);
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Reduced time:")
-                    .right(String.format("%d:%02d", (shortTimeSecondsLeft % 3600) / 60, (shortTimeSecondsLeft % 60)))
-                    .build());
-        }
-
-        if (config.showDebugValues()) {
             int ping = plugin.getLastWorldPing();
             panelComponent.getChildren().add(LineComponent.builder()
                     .left("World ping:")
