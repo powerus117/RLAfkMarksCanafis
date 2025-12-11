@@ -276,13 +276,27 @@ public interface MarksOfGraceCDConfig extends Config {
     default boolean assumeHardKandarinDiary() { return false; }
 
     @ConfigItem(
+            keyName = "enableNtpSync",
+            name = "Enable NTP time sync",
+            description =
+                    "Sync with an internet time server to correct for<br>" +
+                    "system clock drift. Recommended if your computer's<br>" +
+                    "clock is not accurate.",
+            position = 25,
+            section = advanced
+    )
+    default boolean enableNtpSync() {
+        return true;
+    }
+
+    @ConfigItem(
             keyName = "enableWorldPing",
             name = "Enable world ping",
             description =
                     "Measure your connection latency and use it to<br>" +
                     "improve timer accuracy. Disable if you don't want<br>" +
                     "the plugin making network requests.",
-            position = 25,
+            position = 26,
             section = advanced
     )
     default boolean enableWorldPing() {
@@ -295,7 +309,7 @@ public interface MarksOfGraceCDConfig extends Config {
             description =
                     "How often to re-measure your connection latency.<br>" +
                     "Higher values reduce network activity.",
-            position = 26,
+            position = 27,
             section = advanced
     )
     @Units(Units.SECONDS)
@@ -310,7 +324,7 @@ public interface MarksOfGraceCDConfig extends Config {
                     "Extra seconds added to the cooldown timer. Increase<br>" +
                     "this (try 1–3) if the overlay says 'Run' but marks<br>" +
                     "don't spawn yet.",
-            position = 27,
+            position = 28,
             section = advanced
     )
     @Units(Units.SECONDS)
@@ -323,9 +337,9 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Show debug values",
             description =
                     "Display extra information in the overlay such as<br>" +
-                    "lap times and connection latency. Useful for<br>" +
-                    "troubleshooting timing issues.",
-            position = 28,
+                    "lap times, NTP sync status, and connection latency.<br>" +
+                    "Useful for troubleshooting timing issues.",
+            position = 29,
             section = advanced
     )
     default boolean showDebugValues() {
