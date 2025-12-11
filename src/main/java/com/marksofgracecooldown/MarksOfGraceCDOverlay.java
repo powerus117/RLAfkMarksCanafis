@@ -1,5 +1,6 @@
 package com.marksofgracecooldown;
 
+import com.marksofgracecooldown.ntp.NtpClient;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.LineComponent;
@@ -31,88 +32,95 @@ class MarksOfGraceCDOverlay extends OverlayPanel {
             return null;
         }
 
-        // Don't show overlay if the current course is disabled in settings
         if (plugin.currentCourse != null && !plugin.isCourseEnabled(plugin.currentCourse)) {
             return null;
         }
 
         long currentMillis = Instant.now().toEpochMilli();
-        long millisSinceLastComplete = currentMillis - plugin.lastCompleteTimeMillis;
 
-        if (millisSinceLastComplete > TIMEOUT_MILLIS) {
-            plugin.lastCompleteMarkTimeMillis = 0;
-            plugin.lastCompleteTimeMillis = 0;
-            plugin.currentCourse = null;
+        if (currentMillis - plugin.lastCompleteTimeMillis > TIMEOUT_MILLIS) {
+            resetPluginState();
             return null;
         }
 
-        // Determine cooldown state: Run (not on cooldown), XP (on cooldown but safe to complete laps), Wait (on cooldown and near end)
-        if (!plugin.isOnCooldown) {
-            panelComponent.getChildren().add(TitleComponent.builder()
-                    .text("Run")
-                    .color(Color.GREEN)
-                    .build());
-        } else {
-            long millisLeft = Math.max(plugin.getCooldownTimestamp(false) - currentMillis, 0);
-            int secondsLeft = (int) Math.ceil((double) millisLeft / 1000);
-            int thresholdSeconds = plugin.currentCourse != null ? plugin.getLapThresholdSeconds(plugin.currentCourse) : 0;
+        long cooldownTimestamp = plugin.getCooldownTimestamp(false);
+        long secondsLeft = getSecondsLeft(cooldownTimestamp, currentMillis);
 
-            if (secondsLeft >= thresholdSeconds) {
-                // You can safely complete laps for XP
-                panelComponent.getChildren().add(TitleComponent.builder()
-                        .text("XP")
-                        .color(Color.ORANGE)
-                        .build());
-            } else {
-                // Too close to cooldown end - wait
-                panelComponent.getChildren().add(TitleComponent.builder()
-                        .text("Wait")
-                        .color(Color.RED)
-                        .build());
-            }
-        }
+        renderStatusTitle(secondsLeft);
+        addLine("Time until run:", formatTime(secondsLeft));
 
-        long millisLeft = Math.max(plugin.getCooldownTimestamp(false) - currentMillis, 0);
-        long secondsLeft = (long) Math.ceil((double) millisLeft / 1000);
-        panelComponent.getChildren().add(LineComponent.builder()
-                .left("Time until run:")
-                .right(String.format("%d:%02d", (secondsLeft % 3600) / 60, (secondsLeft % 60)))
-                .build());
-
-        // Show reduced Ardougne timer right after the main timer (user-facing info)
         if (plugin.hasReducedCooldown) {
-            long shortTimeSecondsLeft = Math.max(secondsLeft - 60, 0);
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Reduced time:")
-                    .right(String.format("%d:%02d", (shortTimeSecondsLeft % 3600) / 60, (shortTimeSecondsLeft % 60)))
-                    .build());
+            addLine("Reduced time:", formatTime(Math.max(secondsLeft - 60, 0)));
         }
 
-        // Debug-only: show optimal lap times, buffer effects, and ping
         if (config.showDebugValues() && plugin.currentCourse != null) {
-            int baseOptimal = plugin.currentCourse.getOptimalTime(key ->
-                    ("useSeersTeleport".equals(key) && config.useSeersTeleport() &&
-                            (config.assumeHardKandarinDiary() || plugin.hasHardKandarinDiary()))
-            );
-            int combined = Math.max(0, baseOptimal + config.lapTimeBuffer());
-
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Base lap time:")
-                    .right(String.format("%d:%02d", (baseOptimal % 3600) / 60, (baseOptimal % 60)))
-                    .build());
-
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Combined lap time:")
-                    .right(String.format("%d:%02d", (combined % 3600) / 60, (combined % 60)))
-                    .build());
-
-            int ping = plugin.getLastWorldPing();
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("World ping:")
-                    .right(ping >= 0 ? ping + "ms" : "N/A")
-                    .build());
+            renderDebugInfo();
         }
 
         return super.render(graphics);
+    }
+
+    private void resetPluginState() {
+        plugin.lastCompleteMarkTimeMillis = 0;
+        plugin.lastCompleteTimeMillis = 0;
+        plugin.currentCourse = null;
+    }
+
+    private long getSecondsLeft(long cooldownTimestamp, long currentMillis) {
+        long millisLeft = Math.max(cooldownTimestamp - currentMillis, 0);
+        return (long) Math.ceil((double) millisLeft / 1000);
+    }
+
+    private void renderStatusTitle(long secondsLeft) {
+        if (!plugin.isOnCooldown) {
+            addTitle("Run", Color.GREEN);
+            return;
+        }
+
+        int thresholdSeconds = plugin.currentCourse != null
+                ? plugin.getLapThresholdSeconds(plugin.currentCourse) : 0;
+
+        if (secondsLeft >= thresholdSeconds) {
+            addTitle("XP", Color.ORANGE);
+        } else {
+            addTitle("Wait", Color.RED);
+        }
+    }
+
+    private void renderDebugInfo() {
+        int baseOptimal = plugin.currentCourse.getOptimalTime(key ->
+                "useSeersTeleport".equals(key) && config.useSeersTeleport() &&
+                        (config.assumeHardKandarinDiary() || plugin.hasHardKandarinDiary()));
+        int combined = Math.max(0, baseOptimal + config.lapTimeBuffer());
+
+        addLine("Base lap time:", formatTime(baseOptimal));
+        addLine("Combined lap time:", formatTime(combined));
+
+        int ping = plugin.getLastWorldPing();
+        addLine("World ping:", ping >= 0 ? ping + "ms" : "N/A");
+
+        if (config.enableNtpSync()) {
+            addLine("NTP status:", NtpClient.getSyncState().toString());
+            long offset = NtpClient.getSyncedOffsetMillis();
+            addLine("Clock offset:", (offset >= 0 ? "+" : "") + offset + "ms");
+        }
+    }
+
+    private void addTitle(String text, Color color) {
+        panelComponent.getChildren().add(TitleComponent.builder()
+                .text(text)
+                .color(color)
+                .build());
+    }
+
+    private void addLine(String left, String right) {
+        panelComponent.getChildren().add(LineComponent.builder()
+                .left(left)
+                .right(right)
+                .build());
+    }
+
+    private String formatTime(long totalSeconds) {
+        return String.format("%d:%02d", (totalSeconds % 3600) / 60, totalSeconds % 60);
     }
 }
