@@ -14,6 +14,7 @@ import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ItemSpawned;
 import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.StatChanged;
+import net.runelite.api.events.WorldChanged;
 import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.Notifier;
@@ -160,6 +161,12 @@ public class MarksOfGraceCDPlugin extends Plugin {
             hasReducedCooldown = currentCourse == Courses.ARDOUGNE &&
                     client.getVarbitValue(VarbitID.ARDOUGNE_DIARY_ELITE_COMPLETE) == 1;
         }
+    }
+
+    @Subscribe
+    public void onWorldChanged(WorldChanged event) {
+        // Reset ping when changing worlds to avoid using stale latency data
+        lastWorldPing = -1;
     }
 
     @Subscribe
