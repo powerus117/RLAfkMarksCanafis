@@ -20,7 +20,7 @@ public interface MarksOfGraceCDConfig extends Config {
             description =
                     "Extra seconds added to the optimal lap time to<br>" +
                     "give you more room for slower or imperfect laps.<br>" +
-                    "Recommended: 2–4 seconds.",
+                    "Recommended: 2-4 seconds.",
             position = 1
     )
     @Units(Units.SECONDS)
@@ -52,9 +52,9 @@ public interface MarksOfGraceCDConfig extends Config {
             description =
                     "Deprioritize left-click on the final obstacle to<br>" +
                     "help prevent accidentally finishing a lap too early.<br>" +
-                    "Off – never deprioritize.<br>" +
-                    "Near end – only when the overlay shows 'Wait'.<br>" +
-                    "Always – whenever the cooldown is active.",
+                    "Off: never deprioritize.<br>" +
+                    "Near end: only when the overlay shows 'Wait'.<br>" +
+                    "Always: whenever the cooldown is active.",
             position = 2
     )
     default SwapLeftClickMode swapLeftClickMode() {
@@ -322,7 +322,7 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Timer buffer",
             description =
                     "Extra seconds added to the cooldown timer. Increase<br>" +
-                    "this (try 1–3) if the overlay says 'Run' but marks<br>" +
+                    "this (try 1-3) if the overlay says 'Run' but marks<br>" +
                     "don't spawn yet.",
             position = 28,
             section = advanced
