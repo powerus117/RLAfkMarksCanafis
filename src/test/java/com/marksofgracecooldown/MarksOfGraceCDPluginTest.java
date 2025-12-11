@@ -1,5 +1,6 @@
 package com.marksofgracecooldown;
 
+import com.marksofgracecooldown.ntp.NtpClient;
 import net.runelite.client.config.Notification;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,6 +14,9 @@ public class MarksOfGraceCDPluginTest {
 
     @Before
     public void setUp() throws Exception {
+        // Reset NTP state to ensure consistent test behavior
+        NtpClient.resetSync();
+
         plugin = new MarksOfGraceCDPlugin();
 
         // Provide a minimal config implementation (use defaults for unused methods)
@@ -61,6 +65,11 @@ public class MarksOfGraceCDPluginTest {
             @Override
             public boolean showDebugValues() {
                 return false;
+            }
+
+            @Override
+            public boolean enableNtpSync() {
+                return false; // Disable NTP in tests for predictable behavior
             }
 
             // Per-course toggles default to true in the real config; tests can override as needed
