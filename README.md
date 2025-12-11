@@ -1,20 +1,59 @@
-## Marks of Grace Cooldown
-This plugin allows the player to track the marks of grace cooldown on any Agility Course. It makes use of the marks of grace spawning mechanic as mentioned in the OSRS Wiki:
+# Marks of Grace Cooldown
 
-    Each course has a chance to spawn a mark of grace upon completion given that enough time has passed since the last mark of grace was spawned. For most courses this is three minutes. [...]
+A RuneLite plugin that tracks the Marks of Grace cooldown timer on Agility courses, helping you collect more marks efficiently.
 
-    This timer works on the scale of minutes, so if a mark of grace spawned at 00:00 game time, you would have another chance starting from the first tick of game time 00:03, regardless of what tick the mark spawned at during 00:00. This timer persists even after logging out or changing worlds.
+## How It Works
 
-    Upon completing a lap after the timer has expired, the chance to have a mark of grace spawn is [...] 2/3 for the Canifis and Ardougne Rooftop Course, [...].
+After picking up a Mark of Grace, there's a **3-minute cooldown** before another can spawn. This plugin shows you a timer so you know exactly when to complete your next lap for the best chance at spawning a new mark.
 
-This allows us to maximize the marks of grace spawning by timing the moment we finish a full lap with the cooldown shown.
- 
-## How to use
-1. Run an Agility Course that spawns marks of grace until you find one and the overlay will appear.
-2. When the overlay says wait, wait on the last rooftop of the course until the timer runs out.
-3. When the timer runs out, you will get a notification. You can now finish the course, there is a chance this generates a new mark of grace (2/3 on Canifis)
-4. Run the course (the overlay will say run).
-5. Repeat!
+## The Overlay
 
-The plugin was originally made to AFK on the last obstacle, but as an alternative to step 2, you could do anything else, continue running for xp (without marks spawning), do another activity etc. 
-As long as you try to time your lap finishes with the cooldown, you should be getting the maximum number of marks spawning.
+The plugin displays a simple overlay with three possible states:
+
+| Status | Color | What to do |
+|--------|-------|------------|
+| **Run** | 🟢 Green | Complete laps — a mark can spawn! |
+| **XP** | 🟠 Orange | Safe to run laps for XP (no mark will spawn yet) |
+| **Wait** | 🔴 Red | Wait on the last obstacle until the timer runs out |
+
+## Getting Started
+
+1. Start training on any Agility course
+2. Pick up a Mark of Grace — the overlay will appear
+3. Follow the status indicator:
+   - 🟢 **Run** → Finish your lap
+   - 🟠 **XP** → Keep running if you want XP
+   - 🔴 **Wait** → Pause before the last obstacle
+4. When the timer expires, complete a lap for your next mark
+
+## Supported Courses
+
+The plugin works on all 15 courses that spawn Marks of Grace:
+
+- **Rooftop courses**: Draynor, Al Kharid, Varrock, Canifis, Falador, Seers' Village, Pollnivneach, Rellekka, Ardougne
+- **Other courses**: Gnome Stronghold, Barbarian Outpost, Ape Atoll, Werewolf, Shayzien Basic, Shayzien Advanced
+
+## Settings
+
+### Notifications
+Get a desktop notification when the cooldown expires so you don't miss your chance.
+
+### Swap Mode
+Optionally deprioritize the left-click option on the final obstacle while on cooldown, making it harder to accidentally complete a lap too early.
+
+### Diary Support
+- **Ardougne Elite Diary**: If you have this diary, the cooldown has a 50% chance of being reduced to 2 minutes. Enable "Use short Ardougne timer" to use the shorter time.
+- **Seers' Village + Camelot Teleport**: If you use the bank teleport shortcut, enable "Use Seers bank teleport" for accurate lap time calculations.
+
+### Per-Course Toggles
+Enable or disable the plugin for specific courses in the settings.
+
+## Tips
+
+- The timer persists across world hops and logout — just like the actual cooldown
+- You can keep training for XP during cooldown; marks simply won't spawn
+- Use the lap time buffer setting to give yourself extra time if you're not hitting perfect laps
+
+## License
+
+See [LICENSE](LICENSE) for details.
