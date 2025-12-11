@@ -1,6 +1,8 @@
 package com.marksofgracecooldown;
 
 import com.google.inject.Provides;
+import com.marksofgracecooldown.ntp.NtpClient;
+import com.marksofgracecooldown.ntp.NtpSyncState;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -89,6 +91,11 @@ public class MarksOfGraceCDPlugin extends Plugin {
         // Attempt to update kandarin detection status (will only take effect if logged in)
         updateKandarinDetectedConfigIfNeeded();
 
+        // Start NTP sync if enabled to correct for system clock drift
+        if (config.enableNtpSync()) {
+            NtpClient.startSync();
+        }
+
         // Start background executor to periodically refresh the ping to the current world if enabled
         if (config.enableWorldPing()) {
             pingExecutor = Executors.newSingleThreadScheduledExecutor(r -> new Thread(r, "mogcd-world-ping"));
@@ -146,6 +153,9 @@ public class MarksOfGraceCDPlugin extends Plugin {
                 wp.equals(this.client.getLocalPlayer().getWorldLocation()))) {
             currentCourse = course;
             lastCompleteTimeMillis = Instant.now().toEpochMilli();
+
+            // Ensure NTP is synced when user starts agility training
+            checkNtpSync();
 
             hasReducedCooldown = currentCourse == Courses.ARDOUGNE &&
                     client.getVarbitValue(VarbitID.ARDOUGNE_DIARY_ELITE_COMPLETE) == 1;
@@ -276,28 +286,38 @@ public class MarksOfGraceCDPlugin extends Plugin {
         if (lastCompleteMarkTimeMillis == 0)
             return lastCompleteMarkTimeMillis;
 
-        // Use local clock minute-truncation and the user-configured leewaySeconds instead of NTP
-        long minuteTruncatedMillis = lastCompleteMarkTimeMillis - (lastCompleteMarkTimeMillis % MILLIS_PER_MINUTE);
-        long localCooldownMillis = minuteTruncatedMillis + (MARK_COOLDOWN_MINUTES * MILLIS_PER_MINUTE);
-        long leewayAdjusted = localCooldownMillis + ((long) config.timerBufferSeconds() * 1000);
+        // Apply NTP offset to get the correct server time for minute-truncation
+        // This corrects for users whose system clocks are out of sync
+        long ntpOffset = config.enableNtpSync() ? NtpClient.getSyncedOffsetMillis() : 0;
+        long serverTimeMillis = lastCompleteMarkTimeMillis + ntpOffset;
+
+        // Minute-truncate using server time to match OSRS game tick timing
+        long minuteTruncatedMillis = serverTimeMillis - (serverTimeMillis % MILLIS_PER_MINUTE);
+        long serverCooldownMillis = minuteTruncatedMillis + (MARK_COOLDOWN_MINUTES * MILLIS_PER_MINUTE);
+
+        // Add user-configured buffer for safety margin
+        long leewayAdjusted = serverCooldownMillis + ((long) config.timerBufferSeconds() * 1000);
 
         // Apply Ardougne elite diary reduced cooldown only when user opted into using the short Ardougne timer
         if (checkForReduced && hasReducedCooldown && config.useShortArdougneTimer())
             leewayAdjusted -= MILLIS_PER_MINUTE;
 
+        // Convert back to local time by removing the NTP offset
+        long localCooldownMillis = leewayAdjusted - ntpOffset;
+
         // If we have a recent ping to the world, approximate one-way delay and subtract it
         int ping = lastWorldPing;
         if (ping > 0) {
             long oneWay = ping / 2L;
-            leewayAdjusted -= oneWay;
+            localCooldownMillis -= oneWay;
         }
 
         // Safety: don't return a timestamp earlier than the recorded completion time
-        if (leewayAdjusted < lastCompleteMarkTimeMillis) {
-            leewayAdjusted = lastCompleteMarkTimeMillis;
+        if (localCooldownMillis < lastCompleteMarkTimeMillis) {
+            localCooldownMillis = lastCompleteMarkTimeMillis;
         }
 
-        return leewayAdjusted;
+        return localCooldownMillis;
     }
 
     /**
@@ -325,5 +345,14 @@ public class MarksOfGraceCDPlugin extends Plugin {
         }
 
         kandarinDetectionConfigUpdated = true;
+    }
+
+    /**
+     * Starts NTP sync if enabled and not already synced.
+     */
+    private void checkNtpSync() {
+        if (config.enableNtpSync() && NtpClient.getSyncState() == NtpSyncState.NOT_SYNCED) {
+            NtpClient.startSync();
+        }
     }
 }
