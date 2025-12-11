@@ -88,6 +88,30 @@ enum Courses {
         return false;
     }
 
+    /**
+     * Checks if this course is enabled in the config.
+     */
+    boolean isEnabled(MarksOfGraceCDConfig config) {
+        switch (this) {
+            case DRAYNOR: return config.enableDraynor();
+            case AL_KHARID: return config.enableAlKharid();
+            case VARROCK: return config.enableVarrock();
+            case CANIFIS: return config.enableCanifis();
+            case FALADOR: return config.enableFalador();
+            case SEERS: return config.enableSeers();
+            case POLLNIVNEACH: return config.enablePollnivneach();
+            case RELLEKA: return config.enableRelleka();
+            case ARDOUGNE: return config.enableArdougne();
+            case GNOME: return config.enableGnome();
+            case SHAYZIEN_BASIC: return config.enableShayzienBasic();
+            case BARBARIAN: return config.enableBarbarian();
+            case SHAYZIEN_ADVANCED: return config.enableShayzienAdvanced();
+            case APE_ATOLL: return config.enableApeAtoll();
+            case WEREWOLF: return config.enableWerewolf();
+            default: return true;
+        }
+    }
+
     static {
         ImmutableMap.Builder<Integer, Courses> builder = new ImmutableMap.Builder<>();
 
