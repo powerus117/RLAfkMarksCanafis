@@ -270,47 +270,47 @@ public class MarksOfGraceCDPlugin extends Plugin {
 
     @Subscribe
     public void onGameObjectSpawned(GameObjectSpawned event) {
-        onTileObject(event.getTile(), null, event.getGameObject());
+        onTileObject(null, event.getGameObject());
     }
 
     @Subscribe
     public void onGameObjectDespawned(GameObjectDespawned event) {
-        onTileObject(event.getTile(), event.getGameObject(), null);
+        onTileObject(event.getGameObject(), null);
     }
 
     @Subscribe
     public void onGroundObjectSpawned(GroundObjectSpawned event) {
-        onTileObject(event.getTile(), null, event.getGroundObject());
+        onTileObject(null, event.getGroundObject());
     }
 
     @Subscribe
     public void onGroundObjectDespawned(GroundObjectDespawned event) {
-        onTileObject(event.getTile(), event.getGroundObject(), null);
+        onTileObject(event.getGroundObject(), null);
     }
 
     @Subscribe
     public void onWallObjectSpawned(WallObjectSpawned event) {
-        onTileObject(event.getTile(), null, event.getWallObject());
+        onTileObject(null, event.getWallObject());
     }
 
     @Subscribe
     public void onWallObjectDespawned(WallObjectDespawned event) {
-        onTileObject(event.getTile(), event.getWallObject(), null);
+        onTileObject(event.getWallObject(), null);
     }
 
     @Subscribe
     public void onDecorativeObjectSpawned(DecorativeObjectSpawned event) {
-        onTileObject(event.getTile(), null, event.getDecorativeObject());
+        onTileObject(null, event.getDecorativeObject());
     }
 
     @Subscribe
     public void onDecorativeObjectDespawned(DecorativeObjectDespawned event) {
-        onTileObject(event.getTile(), event.getDecorativeObject(), null);
+        onTileObject(event.getDecorativeObject(), null);
     }
 
 
-    private void onTileObject(Tile tile, TileObject oldObject, TileObject newObject) {
-        obstacles.remove(currentCourse);
+    private void onTileObject(TileObject oldObject, TileObject newObject) {
+        obstacles.remove(currentCourse, oldObject);
 
         if (newObject == null) return;
 
