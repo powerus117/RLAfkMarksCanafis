@@ -18,6 +18,7 @@ import net.runelite.api.events.WorldChanged;
 import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.Notifier;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.WorldService;
@@ -66,6 +67,8 @@ public class MarksOfGraceCDPlugin extends Plugin {
     private WorldService worldService;
     @Inject
     private ConfigManager configManager;
+    @Inject
+    private ClientThread clientThread;
     private ScheduledExecutorService pingExecutor;
     // last measured ping to the current RS world in ms; -1 == unknown
     @Setter
@@ -90,7 +93,7 @@ public class MarksOfGraceCDPlugin extends Plugin {
         overlayManager.add(marksCooldownOverlay);
         kandarinDetectionConfigUpdated = false;
         // Attempt to update kandarin detection status (will only take effect if logged in)
-        updateKandarinDetectedConfigIfNeeded();
+        clientThread.invoke(() -> updateKandarinDetectedConfigIfNeeded());
 
         // Start NTP sync if enabled to correct for system clock drift
         if (config.enableNtpSync()) {
