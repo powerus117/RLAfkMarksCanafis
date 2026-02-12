@@ -50,6 +50,7 @@ public class MarksOfGraceCDPlugin extends Plugin {
     private static final int MARK_COOLDOWN_MINUTES = 3;
     public long lastCompleteMarkTimeMillis;
     public long lastCompleteTimeMillis;
+    public long courseStartTimeMillis;
     public boolean isOnCooldown = false;
     public boolean hasReducedCooldown = false;
     Courses currentCourse;
@@ -123,6 +124,11 @@ public class MarksOfGraceCDPlugin extends Plugin {
         kandarinDetectionConfigUpdated = false;
         // clear detection flag in config UI
         configManager.setConfiguration("AfkMarksCanafis", "kandarinDiaryDetected", false);
+        // reset course state
+        lastCompleteMarkTimeMillis = 0;
+        lastCompleteTimeMillis = 0;
+        courseStartTimeMillis = 0;
+        currentCourse = null;
     }
 
     private void refreshWorldPing() {
@@ -153,16 +159,22 @@ public class MarksOfGraceCDPlugin extends Plugin {
 
         Courses course = Courses.getCourse(this.client.getLocalPlayer().getWorldLocation().getRegionID());
 
-        if (course != null && Arrays.stream(course.getCourseEndWorldPoints()).anyMatch((wp) ->
-                wp.equals(this.client.getLocalPlayer().getWorldLocation()))) {
-            currentCourse = course;
-            lastCompleteTimeMillis = Instant.now().toEpochMilli();
+        if (course != null) {
+            if (currentCourse != course) {
+                currentCourse = course;
+                courseStartTimeMillis = Instant.now().toEpochMilli();
+            }
 
-            // Ensure NTP is synced when user starts agility training
-            checkNtpSync();
+            if (Arrays.stream(course.getCourseEndWorldPoints()).anyMatch((wp) ->
+                    wp.equals(this.client.getLocalPlayer().getWorldLocation()))) {
+                lastCompleteTimeMillis = Instant.now().toEpochMilli();
 
-            hasReducedCooldown = currentCourse == Courses.ARDOUGNE &&
-                    client.getVarbitValue(VarbitID.ARDOUGNE_DIARY_ELITE_COMPLETE) == 1;
+                // Ensure NTP is synced when user starts agility training
+                checkNtpSync();
+
+                hasReducedCooldown = currentCourse == Courses.ARDOUGNE &&
+                        client.getVarbitValue(VarbitID.ARDOUGNE_DIARY_ELITE_COMPLETE) == 1;
+            }
         }
     }
 

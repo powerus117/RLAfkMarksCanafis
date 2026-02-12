@@ -28,17 +28,17 @@ class MarksOfGraceCDOverlay extends OverlayPanel {
 
     @Override
     public Dimension render(Graphics2D graphics) {
-        if (plugin.lastCompleteMarkTimeMillis == 0) {
+        if (plugin.currentCourse == null) {
             return null;
         }
 
-        if (plugin.currentCourse != null && !plugin.isCourseEnabled(plugin.currentCourse)) {
+        if (!plugin.isCourseEnabled(plugin.currentCourse)) {
             return null;
         }
 
         long currentMillis = Instant.now().toEpochMilli();
 
-        if (currentMillis - plugin.lastCompleteTimeMillis > TIMEOUT_MILLIS) {
+        if (currentMillis - plugin.courseStartTimeMillis > TIMEOUT_MILLIS) {
             resetPluginState();
             return null;
         }
@@ -63,6 +63,7 @@ class MarksOfGraceCDOverlay extends OverlayPanel {
     private void resetPluginState() {
         plugin.lastCompleteMarkTimeMillis = 0;
         plugin.lastCompleteTimeMillis = 0;
+        plugin.courseStartTimeMillis = 0;
         plugin.currentCourse = null;
     }
 
