@@ -6,15 +6,8 @@ import com.marksofgracecooldown.ntp.NtpSyncState;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.ChatMessageType;
-import net.runelite.api.Client;
-import net.runelite.api.GameState;
-import net.runelite.api.TileItem;
-import net.runelite.api.events.GameTick;
-import net.runelite.api.events.ItemSpawned;
-import net.runelite.api.events.MenuEntryAdded;
-import net.runelite.api.events.StatChanged;
-import net.runelite.api.events.WorldChanged;
+import net.runelite.api.*;
+import net.runelite.api.events.*;
 import net.runelite.api.gameval.ItemID;
 import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.Notifier;
@@ -32,6 +25,9 @@ import net.runelite.http.api.worlds.WorldResult;
 import javax.inject.Inject;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -50,9 +46,12 @@ public class MarksOfGraceCDPlugin extends Plugin {
     private static final int MARK_COOLDOWN_MINUTES = 3;
     public long lastCompleteMarkTimeMillis;
     public long lastCompleteTimeMillis;
+    public long courseStartTimeMillis;
     public boolean isOnCooldown = false;
     public boolean hasReducedCooldown = false;
     Courses currentCourse;
+    @Getter
+    private final Map<Courses, TileObject> obstacles = new HashMap<>();
     @Inject
     private Client client;
     @Inject
@@ -62,7 +61,9 @@ public class MarksOfGraceCDPlugin extends Plugin {
     @Inject
     private OverlayManager overlayManager;
     @Inject
-    private MarksOfGraceCDOverlay marksCooldownOverlay;
+    private MarksOfGraceCDInfoOverlay marksCooldownOverlay;
+    @Inject
+    private MarksOfGraceCDClickBoxOverlay marksCooldownClickboxOverlay;
     @Inject
     private WorldService worldService;
     @Inject
@@ -91,9 +92,10 @@ public class MarksOfGraceCDPlugin extends Plugin {
     @Override
     protected void startUp() {
         overlayManager.add(marksCooldownOverlay);
+        overlayManager.add(marksCooldownClickboxOverlay);
         kandarinDetectionConfigUpdated = false;
         // Attempt to update kandarin detection status (will only take effect if logged in)
-        clientThread.invoke(() -> updateKandarinDetectedConfigIfNeeded());
+        clientThread.invoke(this::updateKandarinDetectedConfigIfNeeded);
 
         // Start NTP sync if enabled to correct for system clock drift
         if (config.enableNtpSync()) {
@@ -114,6 +116,7 @@ public class MarksOfGraceCDPlugin extends Plugin {
     @Override
     protected void shutDown() {
         overlayManager.remove(marksCooldownOverlay);
+        overlayManager.remove(marksCooldownClickboxOverlay);
         if (pingExecutor != null) {
             pingExecutor.shutdownNow();
             pingExecutor = null;
@@ -123,6 +126,12 @@ public class MarksOfGraceCDPlugin extends Plugin {
         kandarinDetectionConfigUpdated = false;
         // clear detection flag in config UI
         configManager.setConfiguration("AfkMarksCanafis", "kandarinDiaryDetected", false);
+        // reset course state
+        lastCompleteMarkTimeMillis = 0;
+        lastCompleteTimeMillis = 0;
+        courseStartTimeMillis = 0;
+        currentCourse = null;
+        obstacles.clear();
     }
 
     private void refreshWorldPing() {
@@ -134,7 +143,7 @@ public class MarksOfGraceCDPlugin extends Plugin {
 
         try {
             // Ping.ping is a blocking call; run in this background thread
-            int ping = Ping.ping(currentWorld);
+            int ping = Ping.ping(currentWorld, true);
             if (ping >= 0) {
                 lastWorldPing = ping;
             } else {
@@ -153,16 +162,22 @@ public class MarksOfGraceCDPlugin extends Plugin {
 
         Courses course = Courses.getCourse(this.client.getLocalPlayer().getWorldLocation().getRegionID());
 
-        if (course != null && Arrays.stream(course.getCourseEndWorldPoints()).anyMatch((wp) ->
-                wp.equals(this.client.getLocalPlayer().getWorldLocation()))) {
-            currentCourse = course;
-            lastCompleteTimeMillis = Instant.now().toEpochMilli();
+        if (course != null) {
+            if (currentCourse != course) {
+                currentCourse = course;
+                courseStartTimeMillis = Instant.now().toEpochMilli();
+            }
 
-            // Ensure NTP is synced when user starts agility training
-            checkNtpSync();
+            if (Arrays.stream(course.getCourseEndWorldPoints()).anyMatch((wp) ->
+                    wp.equals(this.client.getLocalPlayer().getWorldLocation()))) {
+                lastCompleteTimeMillis = Instant.now().toEpochMilli();
 
-            hasReducedCooldown = currentCourse == Courses.ARDOUGNE &&
-                    client.getVarbitValue(VarbitID.ARDOUGNE_DIARY_ELITE_COMPLETE) == 1;
+                // Ensure NTP is synced when user starts agility training
+                checkNtpSync();
+
+                hasReducedCooldown = currentCourse == Courses.ARDOUGNE &&
+                        client.getVarbitValue(VarbitID.ARDOUGNE_DIARY_ELITE_COMPLETE) == 1;
+            }
         }
     }
 
@@ -240,6 +255,70 @@ public class MarksOfGraceCDPlugin extends Plugin {
         int thresholdSeconds = getLapThresholdSeconds(currentCourse);
         if (millisLeft / 1000 < thresholdSeconds) {
             e.getMenuEntry().setDeprioritized(true);
+        }
+    }
+
+    @Subscribe
+    public void onGameStateChanged(GameStateChanged event) {
+        if (Objects.requireNonNull(event.getGameState()) == GameState.LOADING) {
+            lastCompleteMarkTimeMillis = 0;
+            lastCompleteTimeMillis = 0;
+            isOnCooldown = false;
+            obstacles.clear();
+        }
+    }
+
+    @Subscribe
+    public void onGameObjectSpawned(GameObjectSpawned event) {
+        onTileObject(null, event.getGameObject());
+    }
+
+    @Subscribe
+    public void onGameObjectDespawned(GameObjectDespawned event) {
+        onTileObject(event.getGameObject(), null);
+    }
+
+    @Subscribe
+    public void onGroundObjectSpawned(GroundObjectSpawned event) {
+        onTileObject(null, event.getGroundObject());
+    }
+
+    @Subscribe
+    public void onGroundObjectDespawned(GroundObjectDespawned event) {
+        onTileObject(event.getGroundObject(), null);
+    }
+
+    @Subscribe
+    public void onWallObjectSpawned(WallObjectSpawned event) {
+        onTileObject(null, event.getWallObject());
+    }
+
+    @Subscribe
+    public void onWallObjectDespawned(WallObjectDespawned event) {
+        onTileObject(event.getWallObject(), null);
+    }
+
+    @Subscribe
+    public void onDecorativeObjectSpawned(DecorativeObjectSpawned event) {
+        onTileObject(null, event.getDecorativeObject());
+    }
+
+    @Subscribe
+    public void onDecorativeObjectDespawned(DecorativeObjectDespawned event) {
+        onTileObject(event.getDecorativeObject(), null);
+    }
+
+
+    private void onTileObject(TileObject oldObject, TileObject newObject) {
+        obstacles.remove(currentCourse, oldObject);
+
+        if (newObject == null) return;
+
+        if (Courses.allLastObstacleIds.contains(newObject.getId())) {
+            Courses course = Courses.getCourseByLastObstacle(newObject.getId());
+            if (course != null) {
+                obstacles.put(course, newObject);
+            }
         }
     }
 
@@ -364,5 +443,10 @@ public class MarksOfGraceCDPlugin extends Plugin {
         if (config.enableNtpSync() && NtpClient.getSyncState() == NtpSyncState.NOT_SYNCED) {
             NtpClient.startSync();
         }
+    }
+
+    long getSecondsLeft(long cooldownTimestamp, long currentMillis) {
+        long millisLeft = Math.max(cooldownTimestamp - currentMillis, 0);
+        return (long) Math.ceil((double) millisLeft / 1000);
     }
 }
