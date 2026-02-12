@@ -5,8 +5,11 @@ import lombok.Getter;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.gameval.ObjectID;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Enum representing Marks of Grace courses with their last obstacle IDs,
@@ -34,6 +37,8 @@ enum Courses {
 
 
     private static final Map<Integer, Courses> coursesByRegion;
+    static final Set<Integer> allLastObstacleIds;
+    private static final Map<Integer, Courses> coursesByLastObstacleId;
     @Getter
     private final int[] lastObstacleIds;
     @Getter
@@ -63,6 +68,10 @@ enum Courses {
 
     static Courses getCourse(int regionId) {
         return coursesByRegion.get(regionId);
+    }
+
+    static Courses getCourseByLastObstacle(int lastObstacleId) {
+        return coursesByLastObstacleId.get(lastObstacleId);
     }
 
     /**
@@ -137,5 +146,24 @@ enum Courses {
         }
 
         coursesByRegion = builder.build();
+    }
+
+    static {
+        allLastObstacleIds = Arrays.stream(values())
+                .flatMapToInt(c -> Arrays.stream(c.getLastObstacleIds()))
+                .boxed()
+                .collect(Collectors.toSet());
+    }
+
+    static {
+        ImmutableMap.Builder<Integer, Courses> builder = new ImmutableMap.Builder<>();
+
+        for (Courses course : values()) {
+            for (int obstacleId : course.getLastObstacleIds()) {
+                builder.put(obstacleId, course);
+            }
+        }
+
+        coursesByLastObstacleId = builder.build();
     }
 }
