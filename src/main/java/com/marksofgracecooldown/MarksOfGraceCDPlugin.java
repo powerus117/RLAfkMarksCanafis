@@ -143,7 +143,7 @@ public class MarksOfGraceCDPlugin extends Plugin {
 
         try {
             // Ping.ping is a blocking call; run in this background thread
-            int ping = Ping.ping(currentWorld);
+            int ping = Ping.ping(currentWorld, true);
             if (ping >= 0) {
                 lastWorldPing = ping;
             } else {
