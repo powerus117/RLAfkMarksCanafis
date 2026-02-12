@@ -21,12 +21,14 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Lap time buffer",
             description =
                     "Extra seconds added to the optimal lap time to<br>" +
-                    "give you more room for slower or imperfect laps.<br>" +
-                    "Recommended: 2-4 seconds.",
+                            "give you more room for slower or imperfect laps.<br>" +
+                            "Recommended: 2-4 seconds.",
             position = 1
     )
     @Units(Units.SECONDS)
-    default int lapTimeBuffer() { return 2; }
+    default int lapTimeBuffer() {
+        return 2;
+    }
 
     // Replaced the previous boolean setting `swapLeftClickOnWait` with an enum dropdown
     // to allow three modes: OFF, SWAP_WHEN_CANNOT_COMPLETE_LAP (previous behaviour),
@@ -53,10 +55,10 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Swap mode",
             description =
                     "Deprioritize left-click on the final obstacle to<br>" +
-                    "help prevent accidentally finishing a lap too early.<br>" +
-                    "Off: never deprioritize.<br>" +
-                    "Near end: only when the overlay shows 'Wait'.<br>" +
-                    "Always: whenever the cooldown is active.",
+                            "help prevent accidentally finishing a lap too early.<br>" +
+                            "Off: never deprioritize.<br>" +
+                            "Near end: only when the overlay shows 'Wait'.<br>" +
+                            "Always: whenever the cooldown is active.",
             position = 2
     )
     default SwapLeftClickMode swapLeftClickMode() {
@@ -85,51 +87,61 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Highlight click boxes",
             description =
                     "Update highlight of obstacle click boxes.<br>" +
-                    "Off: no change.<br>" +
-                    "Cooldown Active: highlight while cooldown active.<br>" +
-                    "XP Highlight: additional highlight when in XP mode.",
-
+                            "Off: no change.<br>" +
+                            "Cooldown Active: highlight while cooldown active.<br>" +
+                            "XP Highlight: additional highlight when in XP mode.<br>" +
+                            "Note: Not influenced by 'Swap mode' above.<br>",
             position = 3
     )
 
-    default HighlightClickBoxesMode highlightClickBoxesMode() {return HighlightClickBoxesMode.OFF;}
+    default HighlightClickBoxesMode highlightClickBoxesMode() {
+        return HighlightClickBoxesMode.OFF;
+    }
 
     @ConfigItem(
             keyName = "CooldownHighlightColor",
             name = "Cooldown highlight",
-            description =                    "Color used to highlight obstacles when cooldown is active.<br>" +
-                    "Only applies if 'Highlight click boxes' is set to 'Cooldown Active' or 'XP Highlight'.",
+            description = "Color used to highlight obstacles when cooldown is active.<br>" +
+                    "Only applies if 'Highlight click boxes' is set to 'Cooldown Active' or 'XP Highlight'.<br>" +
+                    "Also colors the overlay title when cooldown is active.",
             position = 4
     )
-    default Color CooldownHighlightColor() {return Color.RED;}
+    default Color CooldownHighlightColor() {
+        return Color.RED;
+    }
 
     @ConfigItem(
             keyName = "XpHighlightColor",
             name = "XP highlight",
-            description =                    "Color used to highlight obstacles when you can earn XP (i.e. not on cooldown).<br>" +
-                    "Only applies if 'Highlight click boxes' is set to 'XP Highlight'.",
+            description = "Color used to highlight obstacles when you can earn XP (i.e. not on cooldown).<br>" +
+                    "Only applies if 'Highlight click boxes' is set to 'XP Highlight'.<br>" +
+                    "Also colors the overlay title when you can earn XP.",
             position = 5
     )
 
-    default Color XpHighlightColor() {return Color.ORANGE;}
+    default Color XpHighlightColor() {
+        return Color.ORANGE;
+    }
 
     @ConfigItem(
             keyName = "useCustomLapTime",
             name = "Use custom lap time",
             description =
                     "Replace the built-in optimal lap time with your<br>" +
-                    "own custom value. Leave disabled to use the<br>" +
-                    "course-specific lap times (recommended).",
+                            "own custom value. Leave disabled to use the<br>" +
+                            "course-specific lap times (recommended).",
             position = 6
     )
-    default boolean useCustomLapTime() { return false; }
+    default boolean useCustomLapTime() {
+        return false;
+    }
 
     @ConfigItem(
             keyName = "customLapTimeSeconds",
             name = "Custom lap time",
             description =
                     "Your custom lap time in seconds.<br>" +
-                    "Only used when 'Use custom lap time' is enabled.",
+                            "Only used when 'Use custom lap time' is enabled.",
             position = 7
     )
     @Units(Units.SECONDS)
@@ -142,8 +154,8 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Use short Ardougne timer",
             description =
                     "With the Ardougne Elite Diary, the cooldown has a<br>" +
-                    "50% chance to be reduced to 2 minutes. Enable this<br>" +
-                    "to use the shorter timer instead of the full 3 minutes.",
+                            "50% chance to be reduced to 2 minutes. Enable this<br>" +
+                            "to use the shorter timer instead of the full 3 minutes.",
             position = 8
     )
     default boolean useShortArdougneTimer() {
@@ -155,11 +167,13 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Use Seers bank teleport",
             description =
                     "Enable if you use the Camelot teleport to bank<br>" +
-                    "after each lap. This shortens the optimal lap time.<br>" +
-                    "Requires the Hard Kandarin Diary.",
+                            "after each lap. This shortens the optimal lap time.<br>" +
+                            "Requires the Hard Kandarin Diary.",
             position = 9
     )
-    default boolean useSeersTeleport() {return false;}
+    default boolean useSeersTeleport() {
+        return false;
+    }
 
     @ConfigSection(
             name = "Per-course",
@@ -176,7 +190,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 11,
             section = perCourse
     )
-    default boolean enableDraynor() { return true; }
+    default boolean enableDraynor() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableAlKharid",
@@ -185,7 +201,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 12,
             section = perCourse
     )
-    default boolean enableAlKharid() { return true; }
+    default boolean enableAlKharid() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableVarrock",
@@ -194,7 +212,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 13,
             section = perCourse
     )
-    default boolean enableVarrock() { return true; }
+    default boolean enableVarrock() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableCanifis",
@@ -203,7 +223,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 14,
             section = perCourse
     )
-    default boolean enableCanifis() { return true; }
+    default boolean enableCanifis() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableFalador",
@@ -212,7 +234,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 15,
             section = perCourse
     )
-    default boolean enableFalador() { return true; }
+    default boolean enableFalador() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableSeers",
@@ -221,7 +245,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 16,
             section = perCourse
     )
-    default boolean enableSeers() { return true; }
+    default boolean enableSeers() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enablePollnivneach",
@@ -230,7 +256,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 17,
             section = perCourse
     )
-    default boolean enablePollnivneach() { return true; }
+    default boolean enablePollnivneach() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableRelleka",
@@ -239,7 +267,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 18,
             section = perCourse
     )
-    default boolean enableRelleka() { return true; }
+    default boolean enableRelleka() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableArdougne",
@@ -248,7 +278,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 19,
             section = perCourse
     )
-    default boolean enableArdougne() { return true; }
+    default boolean enableArdougne() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableGnome",
@@ -257,7 +289,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 20,
             section = perCourse
     )
-    default boolean enableGnome() { return true; }
+    default boolean enableGnome() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableShayzienBasic",
@@ -266,7 +300,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 21,
             section = perCourse
     )
-    default boolean enableShayzienBasic() { return true; }
+    default boolean enableShayzienBasic() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableBarbarian",
@@ -275,7 +311,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 22,
             section = perCourse
     )
-    default boolean enableBarbarian() { return true; }
+    default boolean enableBarbarian() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableShayzienAdvanced",
@@ -284,7 +322,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 23,
             section = perCourse
     )
-    default boolean enableShayzienAdvanced() { return true; }
+    default boolean enableShayzienAdvanced() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableApeAtoll",
@@ -293,7 +333,9 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 24,
             section = perCourse
     )
-    default boolean enableApeAtoll() { return true; }
+    default boolean enableApeAtoll() {
+        return true;
+    }
 
     @ConfigItem(
             keyName = "enableWerewolf",
@@ -302,14 +344,16 @@ public interface MarksOfGraceCDConfig extends Config {
             position = 25,
             section = perCourse
     )
-    default boolean enableWerewolf() { return true; }
+    default boolean enableWerewolf() {
+        return true;
+    }
 
 
     @ConfigSection(
             name = "Advanced",
             description =
                     "Fine-tuning options. Most users can leave<br>" +
-                    "these at their default values.",
+                            "these at their default values.",
             position = 26,
             closedByDefault = true
     )
@@ -320,20 +364,22 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Assume Hard Kandarin diary",
             description =
                     "Force the plugin to treat you as having the Hard<br>" +
-                    "Kandarin Diary. Only enable this if you have the<br>" +
-                    "diary but automatic detection isn't working.",
+                            "Kandarin Diary. Only enable this if you have the<br>" +
+                            "diary but automatic detection isn't working.",
             position = 27,
             section = advanced
     )
-    default boolean assumeHardKandarinDiary() { return false; }
+    default boolean assumeHardKandarinDiary() {
+        return false;
+    }
 
     @ConfigItem(
             keyName = "enableNtpSync",
             name = "Enable NTP time sync",
             description =
                     "Sync with an internet time server to correct for<br>" +
-                    "system clock drift. Recommended if your computer's<br>" +
-                    "clock is not accurate.",
+                            "system clock drift. Recommended if your computer's<br>" +
+                            "clock is not accurate.",
             position = 28,
             section = advanced
     )
@@ -346,8 +392,8 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Enable world ping",
             description =
                     "Measure your connection latency and use it to<br>" +
-                    "improve timer accuracy. Disable if you don't want<br>" +
-                    "the plugin making network requests.",
+                            "improve timer accuracy. Disable if you don't want<br>" +
+                            "the plugin making network requests.",
             position = 29,
             section = advanced
     )
@@ -360,7 +406,7 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Ping refresh interval",
             description =
                     "How often to re-measure your connection latency.<br>" +
-                    "Higher values reduce network activity.",
+                            "Higher values reduce network activity.",
             position = 30,
             section = advanced
     )
@@ -374,8 +420,8 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Timer buffer",
             description =
                     "Extra seconds added to the cooldown timer. Increase<br>" +
-                    "this (try 1-3) if the overlay says 'Run' but marks<br>" +
-                    "don't spawn yet.",
+                            "this (try 1-3) if the overlay says 'Run' but marks<br>" +
+                            "don't spawn yet.",
             position = 31,
             section = advanced
     )
@@ -389,8 +435,8 @@ public interface MarksOfGraceCDConfig extends Config {
             name = "Show debug values",
             description =
                     "Display extra information in the overlay such as<br>" +
-                    "lap times, NTP sync status, and connection latency.<br>" +
-                    "Useful for troubleshooting timing issues.",
+                            "lap times, NTP sync status, and connection latency.<br>" +
+                            "Useful for troubleshooting timing issues.",
             position = 32,
             section = advanced
     )
