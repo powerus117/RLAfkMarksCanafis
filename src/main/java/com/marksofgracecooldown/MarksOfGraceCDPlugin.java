@@ -278,8 +278,12 @@ public class MarksOfGraceCDPlugin extends Plugin
 
 		if (item.getId() == ItemID.GRACE)
 		{
-			lastCompleteMarkTimeMillis = lastCompleteTimeMillis;
-			isOnCooldown = true;
+			// Only start a new cooldown if a lap was completed since the last tracked mark.
+			if (lastCompleteTimeMillis > lastCompleteMarkTimeMillis)
+			{
+				lastCompleteMarkTimeMillis = lastCompleteTimeMillis;
+				isOnCooldown = true;
+			}
 		}
 	}
 
