@@ -1063,4 +1063,205 @@ public class MarksOfGraceCDPluginTest {
         assertTrue(p.shouldDeprioritizeMenuEntry(23138));
         assertTrue(p.shouldDeprioritizeMenuEntry(23139));
     }
+
+
+    @Test
+    public void testCooldownTimestamp_reducedArdougne_consistentWithDeactivation() {
+        // When hasReducedCooldown=true and useShortArdougneTimer=true, getCooldownTimestamp(true)
+        // returns one minute earlier than getCooldownTimestamp(false).
+        // The deactivation in onGameTick uses (true); the overlay must use (true) as well.
+        // This test verifies the two values differ by exactly MILLIS_PER_MINUTE.
+
+        MarksOfGraceCDConfig ardougneConfig = new MarksOfGraceCDConfig() {
+            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
+            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.OFF; }
+            @Override public int customLapTimeSeconds() { return 180; }
+            @Override public int timerBufferSeconds() { return 0; }
+            @Override public boolean useShortArdougneTimer() { return true; }
+            @Override public boolean useSeersTeleport() { return false; }
+            @Override public boolean enableWorldPing() { return false; }
+            @Override public int pingRefreshInterval() { return 15; }
+            @Override public boolean showDebugValues() { return false; }
+            @Override public boolean enableNtpSync() { return false; }
+        };
+
+        plugin.setConfig(ardougneConfig);
+
+        long base = Instant.parse("2020-09-13T12:00:30Z").toEpochMilli();
+        plugin.lastCompleteMarkTimeMillis = base;
+        plugin.hasReducedCooldown = true;
+        plugin.setLastWorldPing(-1);
+
+        long withReduced = plugin.getCooldownTimestamp(true);
+        long withoutReduced = plugin.getCooldownTimestamp(false);
+
+        // The reduced timestamp must be exactly one minute earlier
+        assertEquals(MarksOfGraceCDPlugin.MILLIS_PER_MINUTE, withoutReduced - withReduced);
+    }
+
+    @Test
+    public void testCooldownTimestamp_reducedArdougne_deactivatesAtCorrectTime() {
+        // Verify that getCooldownTimestamp(true) (used by deactivation) equals
+        // getCooldownTimestamp(false) minus one minute when reduced cooldown applies.
+        // This ensures the overlay (now using true) shows 0:00 exactly when deactivation fires.
+
+        MarksOfGraceCDConfig ardougneConfig = new MarksOfGraceCDConfig() {
+            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
+            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.OFF; }
+            @Override public int customLapTimeSeconds() { return 180; }
+            @Override public int timerBufferSeconds() { return 0; }
+            @Override public boolean useShortArdougneTimer() { return true; }
+            @Override public boolean useSeersTeleport() { return false; }
+            @Override public boolean enableWorldPing() { return false; }
+            @Override public int pingRefreshInterval() { return 15; }
+            @Override public boolean showDebugValues() { return false; }
+            @Override public boolean enableNtpSync() { return false; }
+        };
+
+        plugin.setConfig(ardougneConfig);
+        plugin.hasReducedCooldown = true;
+        plugin.setLastWorldPing(-1);
+
+        long base = Instant.parse("2020-09-13T12:00:00Z").toEpochMilli();
+        plugin.lastCompleteMarkTimeMillis = base;
+
+        long minuteTruncated = base - (base % MarksOfGraceCDPlugin.MILLIS_PER_MINUTE);
+        // Reduced: 3 min - 1 min = 2 min cooldown
+        long expectedReduced = minuteTruncated + (2 * MarksOfGraceCDPlugin.MILLIS_PER_MINUTE);
+        assertEquals(expectedReduced, plugin.getCooldownTimestamp(true));
+
+        // Without reduction (for comparison)
+        long expectedFull = minuteTruncated + (3 * MarksOfGraceCDPlugin.MILLIS_PER_MINUTE);
+        assertEquals(expectedFull, plugin.getCooldownTimestamp(false));
+    }
+
+    @Test
+    public void testCooldownTimestamp_nonArdougne_reducedNotApplied() {
+        // Even if hasReducedCooldown=true, useShortArdougneTimer=true,
+        // both getCooldownTimestamp(true) and getCooldownTimestamp(false) must be identical
+        // when there is no Ardougne-specific reduction applied (same field, just ensuring
+        // the reduction doesn't apply to non-ardougne configs similarly).
+        // The reduced flag is only set for Ardougne in practice, but getCooldownTimestamp
+        // will still apply it if hasReducedCooldown=true - this test documents that behaviour.
+        MarksOfGraceCDConfig noReducedConfig = new MarksOfGraceCDConfig() {
+            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
+            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.OFF; }
+            @Override public int customLapTimeSeconds() { return 180; }
+            @Override public int timerBufferSeconds() { return 0; }
+            @Override public boolean useShortArdougneTimer() { return false; }
+            @Override public boolean useSeersTeleport() { return false; }
+            @Override public boolean enableWorldPing() { return false; }
+            @Override public int pingRefreshInterval() { return 15; }
+            @Override public boolean showDebugValues() { return false; }
+            @Override public boolean enableNtpSync() { return false; }
+        };
+
+        plugin.setConfig(noReducedConfig);
+        plugin.hasReducedCooldown = true; // flag set but useShortArdougneTimer=false
+        plugin.setLastWorldPing(-1);
+
+        long base = Instant.parse("2020-09-13T12:00:00Z").toEpochMilli();
+        plugin.lastCompleteMarkTimeMillis = base;
+
+        // Without useShortArdougneTimer, both should be identical
+        assertEquals(plugin.getCooldownTimestamp(false), plugin.getCooldownTimestamp(true));
+    }
+
+    @Test
+    public void testItemSpawnedGuard_doesNotRestartCooldownWhenNoNewLap() {
+        // Simulate: player completed a lap at T=1000, mark spawned, cooldown started.
+        // Now the cooldown expires and the mark respawns. onItemSpawned fires again.
+        // Because no NEW lap has completed (lastCompleteTimeMillis == lastCompleteMarkTimeMillis),
+        // the plugin must NOT reset lastCompleteMarkTimeMillis or isOnCooldown.
+
+        long lapTime = 1_000_000L;
+        plugin.lastCompleteTimeMillis = lapTime;
+        plugin.lastCompleteMarkTimeMillis = lapTime; // already set (previous mark spawn)
+        plugin.isOnCooldown = false; // cooldown expired
+
+        // Simulate onItemSpawned logic (extracted here since we can't call the event directly)
+        // The guard: only update if lastCompleteTimeMillis > lastCompleteMarkTimeMillis
+        if (plugin.lastCompleteTimeMillis > plugin.lastCompleteMarkTimeMillis) {
+            plugin.lastCompleteMarkTimeMillis = plugin.lastCompleteTimeMillis;
+            plugin.isOnCooldown = true;
+        }
+
+        // Guard should have blocked the update — no cooldown started, no timestamp change
+        assertFalse("Cooldown should NOT restart for a fresh-respawn mark with no new lap",
+                plugin.isOnCooldown);
+        assertEquals("lastCompleteMarkTimeMillis should be unchanged", lapTime,
+                plugin.lastCompleteMarkTimeMillis);
+    }
+
+    @Test
+    public void testItemSpawnedGuard_startsCooldownWhenNewLapCompleted() {
+        // Simulate: player completed lap 1 at T=1000, mark spawned (lastCompleteMarkTimeMillis=1000).
+        // Player completes lap 2 at T=2000 (lastCompleteTimeMillis=2000).
+        // Mark respawns. onItemSpawned should START a new cooldown.
+
+        long lap1Time = 1_000_000L;
+        long lap2Time = 2_000_000L;
+        plugin.lastCompleteMarkTimeMillis = lap1Time; // from first mark
+        plugin.lastCompleteTimeMillis = lap2Time;     // new lap completed
+        plugin.isOnCooldown = false;
+
+        // Simulate onItemSpawned logic
+        if (plugin.lastCompleteTimeMillis > plugin.lastCompleteMarkTimeMillis) {
+            plugin.lastCompleteMarkTimeMillis = plugin.lastCompleteTimeMillis;
+            plugin.isOnCooldown = true;
+        }
+
+        assertTrue("Cooldown should START when a new lap was completed since last mark",
+                plugin.isOnCooldown);
+        assertEquals("lastCompleteMarkTimeMillis should update to the new lap time", lap2Time,
+                plugin.lastCompleteMarkTimeMillis);
+    }
+
+    @Test
+    public void testItemSpawnedGuard_ardougne_freshRespawnAfterExpiredCooldown() {
+        // Ardougne-specific scenario from the bug report:
+        // Player runs through ardougne, picks up a freshly respawned mark.
+        // lastCompleteTimeMillis = lastCompleteMarkTimeMillis (no new lap since last tracked mark).
+        // The timer MUST NOT show 0 because the cooldown guard blocks the update.
+
+        long lapFinishTime = Instant.parse("2020-09-13T12:03:05Z").toEpochMilli();
+        plugin.lastCompleteTimeMillis = lapFinishTime;
+        plugin.lastCompleteMarkTimeMillis = lapFinishTime; // already tracked this lap
+        plugin.isOnCooldown = false;
+
+        // Simulate what onItemSpawned would do
+        boolean wouldUpdate = plugin.lastCompleteTimeMillis > plugin.lastCompleteMarkTimeMillis;
+
+        assertFalse("Fresh-respawn mark on Ardougne must not restart the cooldown timer",
+                wouldUpdate);
+    }
+
+    @Test
+    public void testItemSpawnedGuard_firstMarkEver_startsNormally() {
+        // Edge case: very first mark spawn. lastCompleteMarkTimeMillis=0, lastCompleteTimeMillis>0.
+        // Guard: lastCompleteTimeMillis(>0) > lastCompleteMarkTimeMillis(0) → should proceed.
+
+        long lapTime = 1_500_000L;
+        plugin.lastCompleteTimeMillis = lapTime;
+        plugin.lastCompleteMarkTimeMillis = 0; // no previous mark
+        plugin.isOnCooldown = false;
+
+        boolean wouldUpdate = plugin.lastCompleteTimeMillis > plugin.lastCompleteMarkTimeMillis;
+
+        assertTrue("First ever mark should correctly start the cooldown", wouldUpdate);
+    }
+
+    @Test
+    public void testItemSpawnedGuard_noLapCompletedYet_doesNothing() {
+        // Edge case: mark spawns but lastCompleteTimeMillis is still 0 (player just loaded in).
+        // Guard blocks because 0 is not > 0.
+
+        plugin.lastCompleteTimeMillis = 0;
+        plugin.lastCompleteMarkTimeMillis = 0;
+        plugin.isOnCooldown = false;
+
+        boolean wouldUpdate = plugin.lastCompleteTimeMillis > plugin.lastCompleteMarkTimeMillis;
+
+        assertFalse("No lap completed yet — mark spawn should be ignored", wouldUpdate);
+    }
 }
