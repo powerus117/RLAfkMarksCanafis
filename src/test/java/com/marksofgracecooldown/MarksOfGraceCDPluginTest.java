@@ -1087,8 +1087,7 @@ public class MarksOfGraceCDPluginTest {
 
         plugin.setConfig(ardougneConfig);
 
-        long base = Instant.parse("2020-09-13T12:00:30Z").toEpochMilli();
-        plugin.lastCompleteMarkTimeMillis = base;
+		plugin.lastCompleteMarkTimeMillis = Instant.parse("2020-09-13T12:00:30Z").toEpochMilli();
         plugin.hasReducedCooldown = true;
         plugin.setLastWorldPing(-1);
 
@@ -1160,8 +1159,7 @@ public class MarksOfGraceCDPluginTest {
         plugin.hasReducedCooldown = true; // flag set but useShortArdougneTimer=false
         plugin.setLastWorldPing(-1);
 
-        long base = Instant.parse("2020-09-13T12:00:00Z").toEpochMilli();
-        plugin.lastCompleteMarkTimeMillis = base;
+		plugin.lastCompleteMarkTimeMillis = Instant.parse("2020-09-13T12:00:00Z").toEpochMilli();
 
         // Without useShortArdougneTimer, both should be identical
         assertEquals(plugin.getCooldownTimestamp(false), plugin.getCooldownTimestamp(true));
@@ -1241,8 +1239,7 @@ public class MarksOfGraceCDPluginTest {
         // Edge case: very first mark spawn. lastCompleteMarkTimeMillis=0, lastCompleteTimeMillis>0.
         // Guard: lastCompleteTimeMillis(>0) > lastCompleteMarkTimeMillis(0) → should proceed.
 
-        long lapTime = 1_500_000L;
-        plugin.lastCompleteTimeMillis = lapTime;
+		plugin.lastCompleteTimeMillis = 1_500_000L;
         plugin.lastCompleteMarkTimeMillis = 0; // no previous mark
         plugin.isOnCooldown = false;
 
