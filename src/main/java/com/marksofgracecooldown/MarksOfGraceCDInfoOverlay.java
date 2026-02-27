@@ -11,8 +11,6 @@ import java.awt.*;
 import java.time.Instant;
 
 class MarksOfGraceCDInfoOverlay extends OverlayPanel {
-    private static final int TIMEOUT_MINUTES = 5;
-    private static final long TIMEOUT_MILLIS = TIMEOUT_MINUTES * MarksOfGraceCDPlugin.MILLIS_PER_MINUTE;
 
     private final MarksOfGraceCDPlugin plugin;
     private final MarksOfGraceCDConfig config;
@@ -37,7 +35,10 @@ class MarksOfGraceCDInfoOverlay extends OverlayPanel {
 
         long currentMillis = Instant.now().toEpochMilli();
 
-        if (currentMillis - plugin.courseStartTimeMillis > TIMEOUT_MILLIS) {
+        // Only time out if there's been no lap activity recently AND no active cooldown.
+        long lastActivity = Math.max(plugin.courseStartTimeMillis, plugin.lastCompleteTimeMillis);
+        long timeoutMillis = Math.max(1, config.inactivityTimeoutMinutes()) * MarksOfGraceCDPlugin.MILLIS_PER_MINUTE;
+        if (!plugin.isOnCooldown && currentMillis - lastActivity > timeoutMillis) {
             resetPluginState();
             return null;
         }
