@@ -146,14 +146,16 @@ public class NtpClient
 		}
 	}
 
-	private static long parseNtpTimestamp(byte[] data, int offset)
+	// Package-private for testing
+	static long parseNtpTimestamp(byte[] data, int offset)
 	{
 		long seconds = readUnsignedInt(data, offset);
 		long fraction = readUnsignedInt(data, offset + 4);
 		return seconds * MILLIS_PER_SECOND + (fraction * MILLIS_PER_SECOND >> 32);
 	}
 
-	private static long readUnsignedInt(byte[] data, int offset)
+	// Package-private for testing
+	static long readUnsignedInt(byte[] data, int offset)
 	{
 		return Byte.toUnsignedLong(data[offset]) << 24 |
 			Byte.toUnsignedLong(data[offset + 1]) << 16 |
