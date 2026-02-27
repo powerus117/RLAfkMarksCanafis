@@ -50,16 +50,14 @@ class MarksOfGraceCDInfoOverlay extends OverlayPanel
 			return null;
 		}
 
-		long cooldownTimestamp = plugin.getCooldownTimestamp(false);
+		// Use getCooldownTimestamp(true) so the overlay timer is always in sync with the
+		// deactivation logic in onGameTick (which also passes true).
+		long cooldownTimestamp = plugin.getCooldownTimestamp(true);
 		long secondsLeft = plugin.getSecondsLeft(cooldownTimestamp, currentMillis);
 
 		renderStatusTitle(secondsLeft);
 		addLine("Time until run:", formatTime(secondsLeft));
 
-		if (plugin.hasReducedCooldown)
-		{
-			addLine("Reduced time:", formatTime(Math.max(secondsLeft - 60, 0)));
-		}
 
 		if (config.showDebugValues() && plugin.currentCourse != null)
 		{
