@@ -431,13 +431,29 @@ public interface MarksOfGraceCDConfig extends Config {
     }
 
     @ConfigItem(
+            keyName = "inactivityTimeoutMinutes",
+            name = "Inactivity timeout",
+            description =
+                    "Minutes of inactivity before the overlay resets.<br>" +
+                            "The timer resets if no lap is completed within<br>" +
+                            "this time and no cooldown is active.<br>" +
+                            "Increase this if you take long breaks between laps.",
+            position = 32,
+            section = advanced
+    )
+    @Units(Units.MINUTES)
+    default int inactivityTimeoutMinutes() {
+        return 5;
+    }
+
+    @ConfigItem(
             keyName = "showDebugValues",
             name = "Show debug values",
             description =
                     "Display extra information in the overlay such as<br>" +
                             "lap times, NTP sync status, and connection latency.<br>" +
                             "Useful for troubleshooting timing issues.",
-            position = 32,
+            position = 33,
             section = advanced
     )
     default boolean showDebugValues() {
