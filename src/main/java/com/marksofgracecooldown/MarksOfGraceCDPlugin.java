@@ -261,9 +261,7 @@ public class MarksOfGraceCDPlugin extends Plugin {
     @Subscribe
     public void onGameStateChanged(GameStateChanged event) {
         if (Objects.requireNonNull(event.getGameState()) == GameState.LOADING) {
-            lastCompleteMarkTimeMillis = 0;
-            lastCompleteTimeMillis = 0;
-            isOnCooldown = false;
+            // Only clear the obstacle map — game objects are re-sent after every region load.
             obstacles.clear();
         }
     }
