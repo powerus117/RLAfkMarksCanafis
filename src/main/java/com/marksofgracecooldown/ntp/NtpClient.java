@@ -134,9 +134,9 @@ public class NtpClient {
 
     private static long readUnsignedInt(byte[] data, int offset) {
         return Byte.toUnsignedLong(data[offset]) << 24 |
-               Byte.toUnsignedLong(data[offset + 1]) << 16 |
-               Byte.toUnsignedLong(data[offset + 2]) << 8 |
-               Byte.toUnsignedLong(data[offset + 3]);
+                Byte.toUnsignedLong(data[offset + 1]) << 16 |
+                Byte.toUnsignedLong(data[offset + 2]) << 8 |
+                Byte.toUnsignedLong(data[offset + 3]);
     }
 
     private static long calculateOffset(long serverMillis, long localMillis) {

@@ -7,7 +7,9 @@ import org.junit.Test;
 
 import java.time.Instant;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class MarksOfGraceCDPluginTest {
     private MarksOfGraceCDPlugin plugin;
@@ -215,15 +217,50 @@ public class MarksOfGraceCDPluginTest {
     public void testCooldownTimestamp_withTimerBuffer() {
         // Test with a timer buffer configured
         MarksOfGraceCDConfig cfgWithBuffer = new MarksOfGraceCDConfig() {
-            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
-            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.OFF; }
-            @Override public int customLapTimeSeconds() { return 180; }
-            @Override public int timerBufferSeconds() { return 5; } // 5 second buffer
-            @Override public boolean useShortArdougneTimer() { return false; }
-            @Override public boolean useSeersTeleport() { return false; }
-            @Override public boolean enableWorldPing() { return false; }
-            @Override public int pingRefreshInterval() { return 15; }
-            @Override public boolean showDebugValues() { return false; }
+            @Override
+            public Notification notifyMarksOfGraceCD() {
+                return Notification.OFF;
+            }
+
+            @Override
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.OFF;
+            }
+
+            @Override
+            public int customLapTimeSeconds() {
+                return 180;
+            }
+
+            @Override
+            public int timerBufferSeconds() {
+                return 5;
+            } // 5 second buffer
+
+            @Override
+            public boolean useShortArdougneTimer() {
+                return false;
+            }
+
+            @Override
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
+            @Override
+            public boolean enableWorldPing() {
+                return false;
+            }
+
+            @Override
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
         };
 
         plugin.setConfig(cfgWithBuffer);
@@ -304,16 +341,55 @@ public class MarksOfGraceCDPluginTest {
         };
 
         p.setConfig(new MarksOfGraceCDConfig() {
-            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
-            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.OFF; }
-            @Override public int customLapTimeSeconds() { return 180; }
-            @Override public int timerBufferSeconds() { return 0; }
-            @Override public boolean useShortArdougneTimer() { return false; }
-            @Override public boolean useSeersTeleport() { return false; }
-            @Override public boolean enableWorldPing() { return false; }
-            @Override public int pingRefreshInterval() { return 15; }
-            @Override public boolean showDebugValues() { return false; }
-            @Override public boolean enableCanifis() { return true; }
+            @Override
+            public Notification notifyMarksOfGraceCD() {
+                return Notification.OFF;
+            }
+
+            @Override
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.OFF;
+            }
+
+            @Override
+            public int customLapTimeSeconds() {
+                return 180;
+            }
+
+            @Override
+            public int timerBufferSeconds() {
+                return 0;
+            }
+
+            @Override
+            public boolean useShortArdougneTimer() {
+                return false;
+            }
+
+            @Override
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
+            @Override
+            public boolean enableWorldPing() {
+                return false;
+            }
+
+            @Override
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
+
+            @Override
+            public boolean enableCanifis() {
+                return true;
+            }
         });
 
         p.currentCourse = Courses.CANIFIS;
@@ -333,16 +409,55 @@ public class MarksOfGraceCDPluginTest {
         };
 
         p.setConfig(new MarksOfGraceCDConfig() {
-            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
-            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_NOT_EXPIRED; }
-            @Override public int customLapTimeSeconds() { return 180; }
-            @Override public int timerBufferSeconds() { return 0; }
-            @Override public boolean useShortArdougneTimer() { return false; }
-            @Override public boolean useSeersTeleport() { return false; }
-            @Override public boolean enableWorldPing() { return false; }
-            @Override public int pingRefreshInterval() { return 15; }
-            @Override public boolean showDebugValues() { return false; }
-            @Override public boolean enableCanifis() { return true; }
+            @Override
+            public Notification notifyMarksOfGraceCD() {
+                return Notification.OFF;
+            }
+
+            @Override
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_NOT_EXPIRED;
+            }
+
+            @Override
+            public int customLapTimeSeconds() {
+                return 180;
+            }
+
+            @Override
+            public int timerBufferSeconds() {
+                return 0;
+            }
+
+            @Override
+            public boolean useShortArdougneTimer() {
+                return false;
+            }
+
+            @Override
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
+            @Override
+            public boolean enableWorldPing() {
+                return false;
+            }
+
+            @Override
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
+
+            @Override
+            public boolean enableCanifis() {
+                return true;
+            }
         });
 
         p.currentCourse = Courses.CANIFIS;
@@ -363,19 +478,70 @@ public class MarksOfGraceCDPluginTest {
         };
 
         pLongTime.setConfig(new MarksOfGraceCDConfig() {
-            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
-            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP; }
-            @Override public int customLapTimeSeconds() { return 180; }
-            @Override public int timerBufferSeconds() { return 0; }
-            @Override public boolean useShortArdougneTimer() { return false; }
-            @Override public boolean useSeersTeleport() { return false; }
-            @Override public boolean enableWorldPing() { return false; }
-            @Override public int pingRefreshInterval() { return 15; }
-            @Override public boolean showDebugValues() { return false; }
-            @Override public boolean enableCanifis() { return true; }
-            @Override public boolean useCustomLapTime() { return false; }
-            @Override public int lapTimeBuffer() { return 0; }
-            @Override public boolean assumeHardKandarinDiary() { return false; }
+            @Override
+            public Notification notifyMarksOfGraceCD() {
+                return Notification.OFF;
+            }
+
+            @Override
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP;
+            }
+
+            @Override
+            public int customLapTimeSeconds() {
+                return 180;
+            }
+
+            @Override
+            public int timerBufferSeconds() {
+                return 0;
+            }
+
+            @Override
+            public boolean useShortArdougneTimer() {
+                return false;
+            }
+
+            @Override
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
+            @Override
+            public boolean enableWorldPing() {
+                return false;
+            }
+
+            @Override
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
+
+            @Override
+            public boolean enableCanifis() {
+                return true;
+            }
+
+            @Override
+            public boolean useCustomLapTime() {
+                return false;
+            }
+
+            @Override
+            public int lapTimeBuffer() {
+                return 0;
+            }
+
+            @Override
+            public boolean assumeHardKandarinDiary() {
+                return false;
+            }
         });
 
         pLongTime.currentCourse = Courses.CANIFIS;
@@ -393,19 +559,70 @@ public class MarksOfGraceCDPluginTest {
         };
 
         pShortTime.setConfig(new MarksOfGraceCDConfig() {
-            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
-            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP; }
-            @Override public int customLapTimeSeconds() { return 180; }
-            @Override public int timerBufferSeconds() { return 0; }
-            @Override public boolean useShortArdougneTimer() { return false; }
-            @Override public boolean useSeersTeleport() { return false; }
-            @Override public boolean enableWorldPing() { return false; }
-            @Override public int pingRefreshInterval() { return 15; }
-            @Override public boolean showDebugValues() { return false; }
-            @Override public boolean enableCanifis() { return true; }
-            @Override public boolean useCustomLapTime() { return false; }
-            @Override public int lapTimeBuffer() { return 0; }
-            @Override public boolean assumeHardKandarinDiary() { return false; }
+            @Override
+            public Notification notifyMarksOfGraceCD() {
+                return Notification.OFF;
+            }
+
+            @Override
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP;
+            }
+
+            @Override
+            public int customLapTimeSeconds() {
+                return 180;
+            }
+
+            @Override
+            public int timerBufferSeconds() {
+                return 0;
+            }
+
+            @Override
+            public boolean useShortArdougneTimer() {
+                return false;
+            }
+
+            @Override
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
+            @Override
+            public boolean enableWorldPing() {
+                return false;
+            }
+
+            @Override
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
+
+            @Override
+            public boolean enableCanifis() {
+                return true;
+            }
+
+            @Override
+            public boolean useCustomLapTime() {
+                return false;
+            }
+
+            @Override
+            public int lapTimeBuffer() {
+                return 0;
+            }
+
+            @Override
+            public boolean assumeHardKandarinDiary() {
+                return false;
+            }
         });
 
         pShortTime.currentCourse = Courses.CANIFIS;
@@ -425,16 +642,55 @@ public class MarksOfGraceCDPluginTest {
         };
 
         p.setConfig(new MarksOfGraceCDConfig() {
-            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
-            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_NOT_EXPIRED; }
-            @Override public int customLapTimeSeconds() { return 180; }
-            @Override public int timerBufferSeconds() { return 0; }
-            @Override public boolean useShortArdougneTimer() { return false; }
-            @Override public boolean useSeersTeleport() { return false; }
-            @Override public boolean enableWorldPing() { return false; }
-            @Override public int pingRefreshInterval() { return 15; }
-            @Override public boolean showDebugValues() { return false; }
-            @Override public boolean enableCanifis() { return true; }
+            @Override
+            public Notification notifyMarksOfGraceCD() {
+                return Notification.OFF;
+            }
+
+            @Override
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_NOT_EXPIRED;
+            }
+
+            @Override
+            public int customLapTimeSeconds() {
+                return 180;
+            }
+
+            @Override
+            public int timerBufferSeconds() {
+                return 0;
+            }
+
+            @Override
+            public boolean useShortArdougneTimer() {
+                return false;
+            }
+
+            @Override
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
+            @Override
+            public boolean enableWorldPing() {
+                return false;
+            }
+
+            @Override
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
+
+            @Override
+            public boolean enableCanifis() {
+                return true;
+            }
         });
 
         p.currentCourse = Courses.CANIFIS;
@@ -454,16 +710,55 @@ public class MarksOfGraceCDPluginTest {
         };
 
         p.setConfig(new MarksOfGraceCDConfig() {
-            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
-            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_NOT_EXPIRED; }
-            @Override public int customLapTimeSeconds() { return 180; }
-            @Override public int timerBufferSeconds() { return 0; }
-            @Override public boolean useShortArdougneTimer() { return false; }
-            @Override public boolean useSeersTeleport() { return false; }
-            @Override public boolean enableWorldPing() { return false; }
-            @Override public int pingRefreshInterval() { return 15; }
-            @Override public boolean showDebugValues() { return false; }
-            @Override public boolean enableCanifis() { return true; }
+            @Override
+            public Notification notifyMarksOfGraceCD() {
+                return Notification.OFF;
+            }
+
+            @Override
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_NOT_EXPIRED;
+            }
+
+            @Override
+            public int customLapTimeSeconds() {
+                return 180;
+            }
+
+            @Override
+            public int timerBufferSeconds() {
+                return 0;
+            }
+
+            @Override
+            public boolean useShortArdougneTimer() {
+                return false;
+            }
+
+            @Override
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
+            @Override
+            public boolean enableWorldPing() {
+                return false;
+            }
+
+            @Override
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
+
+            @Override
+            public boolean enableCanifis() {
+                return true;
+            }
         });
 
         p.currentCourse = Courses.CANIFIS;
@@ -483,16 +778,55 @@ public class MarksOfGraceCDPluginTest {
         };
 
         p.setConfig(new MarksOfGraceCDConfig() {
-            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
-            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_NOT_EXPIRED; }
-            @Override public int customLapTimeSeconds() { return 180; }
-            @Override public int timerBufferSeconds() { return 0; }
-            @Override public boolean useShortArdougneTimer() { return false; }
-            @Override public boolean useSeersTeleport() { return false; }
-            @Override public boolean enableWorldPing() { return false; }
-            @Override public int pingRefreshInterval() { return 15; }
-            @Override public boolean showDebugValues() { return false; }
-            @Override public boolean enableCanifis() { return true; }
+            @Override
+            public Notification notifyMarksOfGraceCD() {
+                return Notification.OFF;
+            }
+
+            @Override
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_NOT_EXPIRED;
+            }
+
+            @Override
+            public int customLapTimeSeconds() {
+                return 180;
+            }
+
+            @Override
+            public int timerBufferSeconds() {
+                return 0;
+            }
+
+            @Override
+            public boolean useShortArdougneTimer() {
+                return false;
+            }
+
+            @Override
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
+            @Override
+            public boolean enableWorldPing() {
+                return false;
+            }
+
+            @Override
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
+
+            @Override
+            public boolean enableCanifis() {
+                return true;
+            }
         });
 
         p.currentCourse = Courses.CANIFIS;
@@ -515,17 +849,56 @@ public class MarksOfGraceCDPluginTest {
         };
 
         p.setConfig(new MarksOfGraceCDConfig() {
-            @Override public net.runelite.client.config.Notification notifyMarksOfGraceCD() { return net.runelite.client.config.Notification.OFF; }
-            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP; }
-            @Override public int customLapTimeSeconds() { return 180; }
-            @Override public int timerBufferSeconds() { return 0; }
-            @Override public boolean useShortArdougneTimer() { return true; }
-            @Override public boolean useSeersTeleport() { return false; }
-            @Override public boolean enableWorldPing() { return false; }
-            @Override public int pingRefreshInterval() { return 15; }
-            @Override public boolean showDebugValues() { return false; }
+            @Override
+            public net.runelite.client.config.Notification notifyMarksOfGraceCD() {
+                return net.runelite.client.config.Notification.OFF;
+            }
+
+            @Override
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP;
+            }
+
+            @Override
+            public int customLapTimeSeconds() {
+                return 180;
+            }
+
+            @Override
+            public int timerBufferSeconds() {
+                return 0;
+            }
+
+            @Override
+            public boolean useShortArdougneTimer() {
+                return true;
+            }
+
+            @Override
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
+            @Override
+            public boolean enableWorldPing() {
+                return false;
+            }
+
+            @Override
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
+
             // explicitly disable GNOME for this test
-            @Override public boolean enableGnome() { return false; }
+            @Override
+            public boolean enableGnome() {
+                return false;
+            }
         });
 
         p.currentCourse = Courses.GNOME;
@@ -546,17 +919,56 @@ public class MarksOfGraceCDPluginTest {
         };
 
         p.setConfig(new MarksOfGraceCDConfig() {
-            @Override public net.runelite.client.config.Notification notifyMarksOfGraceCD() { return net.runelite.client.config.Notification.OFF; }
-            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP; }
-            @Override public int customLapTimeSeconds() { return 180; }
-            @Override public int timerBufferSeconds() { return 0; }
-            @Override public boolean useShortArdougneTimer() { return true; }
-            @Override public boolean useSeersTeleport() { return false; }
-            @Override public boolean enableWorldPing() { return false; }
-            @Override public int pingRefreshInterval() { return 15; }
-            @Override public boolean showDebugValues() { return false; }
+            @Override
+            public net.runelite.client.config.Notification notifyMarksOfGraceCD() {
+                return net.runelite.client.config.Notification.OFF;
+            }
+
+            @Override
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP;
+            }
+
+            @Override
+            public int customLapTimeSeconds() {
+                return 180;
+            }
+
+            @Override
+            public int timerBufferSeconds() {
+                return 0;
+            }
+
+            @Override
+            public boolean useShortArdougneTimer() {
+                return true;
+            }
+
+            @Override
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
+            @Override
+            public boolean enableWorldPing() {
+                return false;
+            }
+
+            @Override
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
+
             // explicitly disable WEREWOLF for this test
-            @Override public boolean enableWerewolf() { return false; }
+            @Override
+            public boolean enableWerewolf() {
+                return false;
+            }
         });
 
         p.currentCourse = Courses.WEREWOLF;
@@ -578,19 +990,70 @@ public class MarksOfGraceCDPluginTest {
         };
 
         p.setConfig(new MarksOfGraceCDConfig() {
-            @Override public Notification notifyMarksOfGraceCD() { return Notification.OFF; }
-            @Override public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() { return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP; }
-            @Override public int customLapTimeSeconds() { return 180; }
-            @Override public int timerBufferSeconds() { return 0; }
-            @Override public boolean useShortArdougneTimer() { return false; }
-            @Override public boolean useSeersTeleport() { return false; }
-            @Override public boolean enableWorldPing() { return false; }
-            @Override public int pingRefreshInterval() { return 15; }
-            @Override public boolean showDebugValues() { return false; }
-            @Override public boolean enableGnome() { return true; }
-            @Override public boolean useCustomLapTime() { return false; }
-            @Override public int lapTimeBuffer() { return 0; }
-            @Override public boolean assumeHardKandarinDiary() { return false; }
+            @Override
+            public Notification notifyMarksOfGraceCD() {
+                return Notification.OFF;
+            }
+
+            @Override
+            public MarksOfGraceCDConfig.SwapLeftClickMode swapLeftClickMode() {
+                return MarksOfGraceCDConfig.SwapLeftClickMode.WHEN_CANNOT_COMPLETE_LAP;
+            }
+
+            @Override
+            public int customLapTimeSeconds() {
+                return 180;
+            }
+
+            @Override
+            public int timerBufferSeconds() {
+                return 0;
+            }
+
+            @Override
+            public boolean useShortArdougneTimer() {
+                return false;
+            }
+
+            @Override
+            public boolean useSeersTeleport() {
+                return false;
+            }
+
+            @Override
+            public boolean enableWorldPing() {
+                return false;
+            }
+
+            @Override
+            public int pingRefreshInterval() {
+                return 15;
+            }
+
+            @Override
+            public boolean showDebugValues() {
+                return false;
+            }
+
+            @Override
+            public boolean enableGnome() {
+                return true;
+            }
+
+            @Override
+            public boolean useCustomLapTime() {
+                return false;
+            }
+
+            @Override
+            public int lapTimeBuffer() {
+                return 0;
+            }
+
+            @Override
+            public boolean assumeHardKandarinDiary() {
+                return false;
+            }
         });
 
         p.currentCourse = Courses.GNOME;
