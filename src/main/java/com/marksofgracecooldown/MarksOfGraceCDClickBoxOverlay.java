@@ -63,7 +63,8 @@ class MarksOfGraceCDClickBoxOverlay extends OverlayPanel
 
 				// Set timer and threshold for clickbox highlight
 				long currentMillis = Instant.now().toEpochMilli();
-				long cooldownTimestamp = plugin.getCooldownTimestamp(false);
+				// Use getCooldownTimestamp(true) to stay in sync with the deactivation logic
+				long cooldownTimestamp = plugin.getCooldownTimestamp(true);
 				long secondsLeft = plugin.getSecondsLeft(cooldownTimestamp, currentMillis);
 				int thresholdSeconds = plugin.currentCourse != null
 					? plugin.getLapThresholdSeconds(plugin.currentCourse) : 0;
